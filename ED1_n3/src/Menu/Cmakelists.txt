@@ -1,0 +1,3 @@
+add_library(Menu Menu.h Menu.c)
+
+target_link_libraries(Menu PUBLIC TreeTikect)

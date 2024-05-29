@@ -1,0 +1,5 @@
+add_subdirectory(NodeTikect)
+
+add_library(TreeTikect TreeTikect.h TreeTikect.c)
+
+target_link_libraries(TreeTikect PUBLIC NodeTikect)

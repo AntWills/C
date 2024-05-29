@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.29)
+
+project(main)
+
+add_subdirectory(src/Date)
+add_subdirectory(src/Tikect)
+add_subdirectory(src/TreeTikect)
+add_subdirectory(src/Menu)
+
+add_executable(main src/main.c)
+
+target_link_libraries(main PUBLIC Menu)

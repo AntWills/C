@@ -1,0 +1,5 @@
+add_library(Tikect Tikect.h Tikect.c)
+
+add_subdirectory(Identifier)
+
+target_link_libraries(Tikect PUBLIC Date Identifier)

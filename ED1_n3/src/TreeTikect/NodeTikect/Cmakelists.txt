@@ -1,0 +1,3 @@
+add_library(NodeTikect Node.h Node.c)
+
+target_link_libraries(NodeTikect PUBLIC Tikect)
