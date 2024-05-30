@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(mainStack)
+
+add_executable(mainStack src/main.c)
+
+add_subdirectory(src/Stack)
+
+target_link_libraries(mainStack PUBLIC Stack)
