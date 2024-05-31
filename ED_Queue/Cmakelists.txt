@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(mainQueue)
+
+add_executable(mainQueue src/main.c)
+
+add_subdirectory(src/Queue)
+
+target_link_libraries(mainQueue PUBLIC Queue)
