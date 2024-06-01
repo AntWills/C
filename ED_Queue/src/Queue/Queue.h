@@ -24,6 +24,6 @@ typedef struct Queue {
 } Queue;
 
 Queue* newQueue();
-void freeQueue(Queue* queue);
+void freeQueue(Queue** queue);
 
 #endif

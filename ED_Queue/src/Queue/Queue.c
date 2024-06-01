@@ -48,11 +48,12 @@ static int front(Queue* current) {
 }
 
 static bool isEmpty(Queue* current) {
-	if (current)
-		if (current->nodeFront)
-			return false;
+	if (!current)
+		return true;
+	if (!current->nodeFront)
+		return true;
 
-	return true;
+	return false;
 }
 
 static bool contains(Queue* current, int info) {
@@ -70,6 +71,17 @@ static bool contains(Queue* current, int info) {
 	return false;
 }
 
+static void print(Queue* current) {
+	if (!current)
+		return;
+	Node* auxi = current->nodeFront;
+	while (auxi) {
+		printf("%d -> ", auxi->info);
+		auxi = auxi->next;
+	}
+	printf("NULL.");
+}
+
 Queue* newQueue() {
 	Queue* queue = (Queue*)malloc(sizeof(Queue));
 
@@ -85,20 +97,21 @@ Queue* newQueue() {
 	queue->front = front;
 	queue->isEmpty = isEmpty;
 	queue->contains = contains;
+	queue->print = print;
 
 	return queue;
 }
 
-void freeQueue(Queue* current) {
+void freeQueue(Queue** current) {
 	if (!current)
 		return;
-	if (current->isEmpty(current)) {
+	if ((*current)->isEmpty(current)) {
 		free(current);
 		return;
 	}
 
-	Node* node = current->nodeFront->next;
-	Node* ant = current->nodeFront;
+	Node* node = (*current)->nodeFront->next;
+	Node* ant = (*current)->nodeFront;
 
 	while (node) {
 		free(ant);
@@ -106,5 +119,6 @@ void freeQueue(Queue* current) {
 		node = node->next;
 	}
 	free(ant);
-	free(current);
+	free(*current);
+	*current = NULL;
 }
