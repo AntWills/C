@@ -11,7 +11,7 @@ typedef struct Node {
 } Node;
 
 typedef struct Queue {
-	Node* root;
+	Node *nodeFront, *nodeLast;
 	int size;
 
 	void (*enqueue)(struct Queue*, int info);
