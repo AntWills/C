@@ -105,7 +105,7 @@ Queue* newQueue() {
 void freeQueue(Queue** current) {
 	if (!current)
 		return;
-	if ((*current)->isEmpty(current)) {
+	if ((*current)->isEmpty(*current)) {
 		free(current);
 		return;
 	}
