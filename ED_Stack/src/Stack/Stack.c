@@ -1,9 +1,17 @@
 #include "Stack.h"
 
-static void push(Stack* current, int info) {
-	if (!current)
+bool isEmptyStack(Stack* stack) {
+	if (!stack)
+		return true;
+	if (!stack->root)
+		return true;
+	return false;
+}
+
+void pushStack(Stack* stack, int info) {
+	if (!stack)
 		return;
-	current->size++;
+	stack->size++;
 
 	Node* node = (Node*)malloc(sizeof(Node));
 
@@ -13,50 +21,42 @@ static void push(Stack* current, int info) {
 	node->info = info;
 	node->next = NULL;
 
-	if (current->isEmpty(current)) {
-		current->root = node;
+	if (isEmptyStack(stack)) {
+		stack->root = node;
 		return;
 	}
 
-	node->next = current->root;
-	current->root = node;
+	node->next = stack->root;
+	stack->root = node;
 }
 
-static int pop(Stack* current) {
-	if (!current)
+int popStack(Stack* stack) {
+	if (!stack)
 		return -1;
-	if (!current->isEmpty(current))
+	if (isEmptyStack(stack))
 		return -1;
-	current->size--;
-	Node* node = current->root;
+	stack->size--;
+	Node* node = stack->root;
 
-	current->root = node->next;
+	stack->root = node->next;
 	int auxi = node->info;
 	free(node);
 	return auxi;
 }
 
-static int top(Stack* current) {
-	if (!current)
+int topStack(Stack* stack) {
+	if (!stack)
 		return -1;
-	if (!current->isEmpty(current))
-		return current->root->info;
+	if (!isEmptyStack(stack))
+		return stack->root->info;
 	return -1;
 }
 
-static bool isEmpty(Stack* current) {
-	if (!current)
-		return false;
-	if (current->root)
-		return false;
-	return true;
-}
-
-static void print(Stack* current) {
-	if (!current)
+void printStack(Stack* stack) {
+	if (!stack)
 		return;
 
-	Node* auxi = current->root;
+	Node* auxi = stack->root;
 	while (auxi) {
 		printf("%d -> ", auxi->info);
 		auxi = auxi->next;
@@ -66,32 +66,30 @@ static void print(Stack* current) {
 
 Stack* newStack() {
 	Stack* stack = (Stack*)malloc(sizeof(Stack));
+	stack->root = NULL;
+	stack->size = 0;
 
 	if (!stack)
 		return NULL;
-
-	stack->root = NULL;
-	stack->size = 0;
-	stack->push = push;
-	stack->pop = pop;
-	stack->top = top;
-	stack->isEmpty = isEmpty;
-	stack->print = print;
 }
 
-void freeStack(Stack* current) {
-	if (!current)
+void freeStack(Stack** stack) {
+	if (!stack)
 		return;
-	if (current->isEmpty(current))
+	if (isEmptyStack(*stack)) {
+		free(stack);
 		return;
-	Node* ant = current->root;
-	Node* auxi = current->root->next;
+	}
 
-	while (auxi) {
+	Node* node = (*stack)->root->next;
+	Node* ant = (*stack)->root;
+
+	while (node) {
 		free(ant);
-		ant = auxi;
-		auxi = auxi->next;
+		ant = node;
+		node = node->next;
 	}
 	free(ant);
-	free(current);
+	free(*stack);
+	*stack = NULL;
 }

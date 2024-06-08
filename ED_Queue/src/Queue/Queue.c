@@ -1,68 +1,68 @@
 #include "Queue.h"
 
-static void enqueue(Queue* current, int info) {
-	if (!current)
+bool isEmptyQueue(Queue* queue) {
+	if (!queue)
+		return true;
+	if (!queue->nodeFront)
+		return true;
+
+	return false;
+}
+
+void enqueue(Queue* queue, int info) {
+	if (!queue)
 		return;
 	Node* node = (Node*)malloc(sizeof(Node));
 	if (!node)
 		return;
-	current->size++;
+	queue->size++;
 	node->info = info;
 	node->next = NULL;
 
-	if (current->isEmpty(current)) {
-		current->nodeFront = node;
-		current->nodeLast = node;
+	if (isEmptyQueue(queue)) {
+		queue->nodeFront = node;
+		queue->nodeLast = node;
 		return;
 	}
 
-	current->nodeLast->next = node;
-	current->nodeLast = node;
+	queue->nodeLast->next = node;
+	queue->nodeLast = node;
 }
 
-static int dequeue(Queue* current) {
-	if (!current)
+int dequeue(Queue* queue) {
+	if (!queue)
 		return 0;
-	if (current->isEmpty(current))
+	if (isEmptyQueue(queue))
 		return 0;
-	current->size--;
-	Node* auxi = current->nodeFront;
+	queue->size--;
+	Node* auxi = queue->nodeFront;
 
-	if (current->nodeFront == current->nodeLast)
-		current->nodeLast = NULL;
+	if (queue->nodeFront == queue->nodeLast)
+		queue->nodeLast = NULL;
 
-	current->nodeFront = auxi->next;
+	queue->nodeFront = auxi->next;
 
 	int info = auxi->info;
 	free(auxi);
 	return info;
 }
 
-static int front(Queue* current) {
-	if (!current)
+int frontQueue(Queue* queue) {
+	if (!queue)
 		return 0;
-	if (current->isEmpty(current))
+	if (isEmptyQueue(queue))
 		return 0;
 
-	return current->nodeFront->info;
+	return queue->nodeFront->info;
 }
 
-static bool isEmpty(Queue* current) {
-	if (!current)
-		return true;
-	if (!current->nodeFront)
-		return true;
-
-	return false;
-}
-
-static bool contains(Queue* current, int info) {
-	if (!current)
+bool containsQueue(Queue* queue, int info) {
+	if (!queue)
 		return false;
-	if (current->isEmpty(current))
+	if (isEmptyQueue(queue))
 		return false;
 
-	Node* auxi = current->nodeFront;
+	Node* auxi = queue->nodeFront;
 	while (auxi) {
 		if (auxi->info == info)
 			return true;
@@ -71,10 +71,10 @@ static bool contains(Queue* current, int info) {
 	return false;
 }
 
-static void print(Queue* current) {
-	if (!current)
+void printQueue(Queue* queue) {
+	if (!queue)
 		return;
-	Node* auxi = current->nodeFront;
+	Node* auxi = queue->nodeFront;
 	while (auxi) {
 		printf("%d -> ", auxi->info);
 		auxi = auxi->next;
@@ -92,26 +92,19 @@ Queue* newQueue() {
 	queue->nodeFront = NULL;
 	queue->nodeLast = NULL;
 
-	queue->enqueue = enqueue;
-	queue->dequeue = dequeue;
-	queue->front = front;
-	queue->isEmpty = isEmpty;
-	queue->contains = contains;
-	queue->print = print;
-
 	return queue;
 }
 
-void freeQueue(Queue** current) {
-	if (!current)
+void freeQueue(Queue** queue) {
+	if (!queue)
 		return;
-	if ((*current)->isEmpty(*current)) {
-		free(current);
+	if (isEmptyQueue(*queue)) {
+		free(queue);
 		return;
 	}
 
-	Node* node = (*current)->nodeFront->next;
-	Node* ant = (*current)->nodeFront;
+	Node* node = (*queue)->nodeFront->next;
+	Node* ant = (*queue)->nodeFront;
 
 	while (node) {
 		free(ant);
@@ -119,6 +112,6 @@ void freeQueue(Queue** current) {
 		node = node->next;
 	}
 	free(ant);
-	free(*current);
-	*current = NULL;
+	free(*queue);
+	*queue = NULL;
 }

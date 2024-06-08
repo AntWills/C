@@ -13,17 +13,17 @@ int main() {
 	Queue* queue = newQueue();
 
 	for (int i = 0; i < 7; i++)
-		queue->enqueue(queue, vetorAuxi[i]);
-	queue->print(queue);
+		enqueue(queue, vetorAuxi[i]);
+	printQueue(queue);
 
 	printf("\nNumber elements: %d.\n", queue->size);
-	queue->dequeue(queue);
-	queue->dequeue(queue);
+	dequeue(queue);
+	dequeue(queue);
 	printf("Number elements: %d.\n", queue->size);
-	printf("Front: %d.\n", queue->front(queue));
-	printf("Contain 5? %s.\n", boolString(queue->contains(queue, 5)));
-	printf("Contain 0? %s.\n", boolString(queue->contains(queue, 0)));
-	printf("Is empty? %s.\n", boolString(queue->isEmpty(queue)));
+	printf("Front: %d.\n", frontQueue(queue));
+	printf("Contain 5? %s.\n", boolString(containsQueue(queue, 5)));
+	printf("Contain 0? %s.\n", boolString(containsQueue(queue, 0)));
+	printf("Is empty? %s.\n", boolString(isEmptyQueue(queue)));
 	freeQueue(&queue);
 	return 0;
 }

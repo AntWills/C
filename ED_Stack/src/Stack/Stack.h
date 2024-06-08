@@ -13,15 +13,16 @@ typedef struct Node {
 typedef struct Stack {
 	Node* root;
 	int size;
-	void (*push)(struct Stack*, int);
-	int (*pop)(struct Stack*);
-	int (*top)(struct Stack*);
-	bool (*isEmpty)(struct Stack*);
 
-	void (*print)(struct Stack*);
 } Stack;
 
 Stack* newStack();
-void freeStack();
+void freeStack(Stack** stack);
+
+void pushStack(Stack* stack, int);
+int popStack(struct Stack* stack);
+int topStack(struct Stack* stack);
+bool isEmptyStack(struct Stack* stack);
+void printStack(struct Stack* stack);
 
 #endif

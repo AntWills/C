@@ -14,16 +14,17 @@ typedef struct Queue {
 	Node *nodeFront, *nodeLast;
 	int size;
 
-	void (*enqueue)(struct Queue*, int info);
-	int (*dequeue)(struct Queue*);
-	int (*front)(struct Queue*);
-	bool (*isEmpty)(struct Queue*);
-	bool (*contains)(struct Queue*, int element);
-
-	void (*print)(struct Queue*);
 } Queue;
 
 Queue* newQueue();
 void freeQueue(Queue** queue);
+
+void enqueue(struct Queue* queue, int info);
+int dequeue(struct Queue* queue);
+int frontQueue(struct Queue* queue);
+bool isEmptyQueue(struct Queue* queue);
+bool containsQueue(struct Queue* queue, int element);
+
+void printQueue(struct Queue*);
 
 #endif
