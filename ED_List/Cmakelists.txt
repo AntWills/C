@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(mainList)
+
+add_executable(mainList src/main.c)
+
+add_subdirectory(src/List)
+
+target_link_libraries(mainList PUBLIC List)

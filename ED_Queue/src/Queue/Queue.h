@@ -13,7 +13,6 @@ typedef struct Node {
 typedef struct Queue {
 	Node *nodeFront, *nodeLast;
 	int size;
-
 } Queue;
 
 Queue* newQueue();
