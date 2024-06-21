@@ -1,6 +1,9 @@
 #ifndef LIST_H
 #define LIST_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef struct Node {
 	int obj;
 	struct Node *prior, *next;
