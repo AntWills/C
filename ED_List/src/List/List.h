@@ -30,5 +30,6 @@ void swapIndexList(List* list, int indexA, int indexB);
 void sortList(List* list);
 
 void printList(List* list);
+void printReverseList(List* list);
 
 #endif

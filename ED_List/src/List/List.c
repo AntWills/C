@@ -38,6 +38,62 @@ static Node* getNodeIndexList(List* list, int index) {
 	}
 }
 
+static Node* getNodeList(List* list, int obj) {
+	Node* auxi = NULL;
+
+	auxi = list->firt;
+	while (auxi) {
+		if (auxi->obj == obj)
+			return auxi;
+		auxi = auxi->next;
+	}
+	return NULL;
+}
+
+static void removeNode(List* list, Node* node) {
+	if (node->prior)
+		node->prior->next = node->next;
+	else
+		list->firt = node->next;
+
+	if (node->next)
+		node->next->prior = node->prior;
+	else
+		list->last = node->prior;
+}
+
+static swapNodeList(List* list, Node* nodeA, Node* nodeB) {
+	Node* nextA = nodeA->next;
+	Node* nextB = nodeB->next;
+
+	nodeA->next = nextB;
+	nodeB->next = nextA;
+
+	if (nextA)
+		nextA->prior = nodeB;
+	else
+		list->last = nodeB;
+	if (nextB)
+		nextB->prior = nodeA;
+	else
+		list->last = nodeA;
+
+	Node* priorA = nodeA->prior;
+	Node* priorB = nodeB->prior;
+
+	nodeA->prior = priorB;
+	nodeB->prior = priorA;
+
+	if (priorA)
+		priorA->next = nodeB;
+	else
+		list->firt = nodeB;
+	if (priorB)
+		priorB->next = nodeA;
+	else
+		list->firt = nodeA;
+}
+
 List* newList() {
 	List* list = (List*)malloc(sizeof(List));
 	if (!list)
@@ -108,6 +164,48 @@ void addIndexList(List* list, int index, int obj) {
 	node->next = nodeIndex;
 }
 
+void removeList(List* list, int obj) {
+	Node* node = getNodeList(list, obj);
+	if (!node)
+		return;
+	removeNode(list, node);
+	list->size--;
+	free(node);
+}
+
+void removeIndexList(List* list, int index) {
+	Node* node = getNodeIndexList(list, index);
+	if (!node)
+		return;
+	removeNode(list, node);
+	list->size--;
+	free(node);
+}
+
+int getIndexList(List* list, int index) {
+	Node* node = getNodeIndexList(list, index);
+	if (!node)
+		return 0;
+	return node->obj;
+}
+
+void setIndexList(List* list, int index, int obj) {
+	Node* node = getNodeIndexList(list, index);
+	if (!node)
+		return;
+	node->obj = obj;
+}
+
+void swapIndexList(List* list, int indexA, int indexB) {
+	if (indexA == indexB)
+		return;
+	Node* nodeA = getNodeIndexList(list, indexA);
+	Node* nodeB = getNodeIndexList(list, indexB);
+	if (!nodeA || !nodeB)
+		return;
+	swapNodeList(list, nodeA, nodeB);
+}
+
 void printList(List* list) {
 	Node* auxi = list->firt;
 
@@ -116,4 +214,15 @@ void printList(List* list) {
 		auxi = auxi->next;
 	}
 	printf("NULL.");
+}
+
+void printReverseList(List* list) {
+	Node* auxi = list->last;
+
+	printf("NULL");
+	while (auxi) {
+		printf(" <- %d", auxi->obj);
+		auxi = auxi->prior;
+	}
+	printf(".");
 }
