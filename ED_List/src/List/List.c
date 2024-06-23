@@ -62,7 +62,7 @@ static void removeNode(List* list, Node* node) {
 		list->last = node->prior;
 }
 
-static swapNodeList(List* list, Node* nodeA, Node* nodeB) {
+static void swapNodeList(List* list, Node* nodeA, Node* nodeB) {
 	Node* nextA = nodeA->next;
 	Node* nextB = nodeB->next;
 
@@ -225,4 +225,28 @@ void printReverseList(List* list) {
 		auxi = auxi->prior;
 	}
 	printf(".");
+}
+
+void sortList(List* list) {
+	if (!list)
+		return;
+	Node* auxi = list->firt;
+	Node* prior = NULL;
+	bool swap = false;
+
+	do {
+		swap = false;
+		auxi = list->firt;
+		prior = auxi;
+		auxi = auxi->next;
+
+		while (auxi) {
+			if (prior->obj > auxi->obj) {
+				swapNodeList(list, prior, auxi);
+				swap = true;
+			}
+			prior = auxi;
+			auxi = auxi->next;
+		}
+	} while (swap);
 }
