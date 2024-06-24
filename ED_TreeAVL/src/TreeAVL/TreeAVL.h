@@ -7,6 +7,7 @@
 
 typedef struct Node {
 	int obj;
+	int height;
 	struct Node *left, *right;
 } Node;
 

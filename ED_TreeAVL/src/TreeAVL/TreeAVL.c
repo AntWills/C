@@ -1,8 +1,70 @@
 #include "TreeAVL.h"
 
+static int getHeight(Node* node) {
+	if (!node)
+		return -1;
+	return node->height;
+}
+
+static int higherNum(int x, int y) {
+	return x > y ? x : y;
+}
+
+static int calcHeight(Node* node) {
+	return higherNum(getHeight(node->left), getHeight(node->right)) + 1;
+}
+
+static int balancingFactor(Node* node) {
+	return getHeight(node->left) - getHeight(node->right);
+}
+
+static void rotationLeft(Node** root) {
+	Node* node = (*root)->left;
+
+	(*root)->left = node->right;
+	node->right = *root;
+
+	(*root)->height = calcHeight(*root);
+	node->height = calcHeight(node);
+
+	*root = node;
+}
+
+static void rotationRight(Node** root) {
+	Node* node = (*root)->right;
+
+	(*root)->right = node->left;
+	node->left = *root;
+
+	(*root)->height = calcHeight(*root);
+	node->height = calcHeight(node);
+
+	*root = node;
+}
+
+void rotationLeftRight(Node** root) {
+	rotationRight(&(*root)->left);
+	rotationLeft(root);
+}
+
+void rotationRightLeft(Node** root) {
+	rotationLeft(&(*root)->right);
+	rotationRight(root);
+}
+
+static void balanceTree(Node** root) {
+	int fator = balancingFactor(*root);
+
+	if (fator > 1)
+		balancingFactor((*root)->left) < 0 ? rotationLeftRight(root) : rotationLeft(root);
+	else if (fator < -1)
+		balancingFactor((*root)->right) > 0 ? rotationRightLeft(root) : rotationRight(root);
+}
+
 static Node* newNode(int obj, Node* left, Node* right) {
 	Node* node = (Node*)malloc(sizeof(Node));
 	node->obj = obj;
+	node->height = 0;
 	node->left = left;
 	node->right = right;
 
@@ -46,16 +108,25 @@ static bool insertNode(Node** root, Node* node) {
 		returnIsertBool = insertNode(&(*root)->left, node);
 	else
 		returnIsertBool = insertNode(&(*root)->right, node);
+	if (!returnIsertBool)
+		return false;
+
+	(*root)->height = calcHeight(*root);
+	balanceTree(root);
 
 	return returnIsertBool;
 }
 
-static void printNodeTree(Node* root) {
+static void printNodeTree(Node* root, int depth) {
 	if (!root)
 		return;
-	printNodeTree(root->left);
-	printf("%d ", root->obj);
-	printNodeTree(root->right);
+
+	for (int i = depth; i > 0; i--)
+		printf("      |");
+
+	printf(" %02d : %02d:\n", root->obj, root->height);
+	printNodeTree(root->left, depth + 1);
+	printNodeTree(root->right, depth + 1);
 }
 
 TreeAVL* newTreeAVL() {
@@ -96,5 +167,5 @@ int searchTreeAVL(TreeAVL* tree, int obj) {
 void printTreeAVL(TreeAVL* tree) {
 	if (!tree)
 		return;
-	printNodeTree(tree->root);
+	printNodeTree(tree->root, 0);
 }

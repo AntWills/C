@@ -5,9 +5,9 @@
 
 int main() {
 	TreeAVL* tree = newTreeAVL();
-	int vector[] = {5, 7, 8, 0, 3, 10, 10};
-	for (int i = 0; i < 6; i++)
+	int vector[] = {15, 10, 13, 11, 12, 20, 40, 30, 50, 8, 9, 4};
+	for (int i = 0; i < 12; i++)
 		insertTreeAVL(tree, vector[i]);
-	printf("Obj: %d.", searchTreeAVL(tree, 10));
+	printTreeAVL(tree);
 	return 0;
 }
