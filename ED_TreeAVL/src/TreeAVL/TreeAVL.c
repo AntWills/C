@@ -53,6 +53,9 @@ void rotationRightLeft(Node** root) {
 }
 
 static void balanceTree(Node** root) {
+	if (!(*root))
+		return;
+	(*root)->height = calcHeight(*root);
 	int fator = balancingFactor(*root);
 
 	if (fator > 1)
@@ -77,12 +80,28 @@ static Node* newNode(int obj, Node* left, Node* right) {
  *  Retorna 1, se node1 for maior que node2.
  *  Retorna -1, se node1 for menor que node2.
  */
-static int isEqualNode(Node const* node1, Node const* node2) {
+static int isEqualNode(Node* const node1, Node* const node2) {
 	if (!node1 || !node2)
 		return 0;
 	if (node1->obj == node2->obj)
 		return 0;
 	if (node1->obj > node2->obj)
+		return 1;
+	return -1;
+}
+
+/**
+ *  Função que compara um obj e uma info.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se node for maior que a info.
+ *  Retorna -1, se node for menor que a info.
+ */
+static int isEqualInfo(Node* const node, int info) {
+	if (!node)
+		return 0;
+	if (node->obj == info)
+		return 0;
+	if (node->obj > info)
 		return 1;
 	return -1;
 }
@@ -103,30 +122,14 @@ static bool insertNode(Node** root, Node* node) {
 	if (isEqualNode(*root, node) == 0)
 		return false;
 
-	bool returnIsertBool = true;
-	if (isEqualNode(*root, node) > 0)
-		returnIsertBool = insertNode(&(*root)->left, node);
-	else
-		returnIsertBool = insertNode(&(*root)->right, node);
+	bool returnIsertBool = isEqualNode(*root, node) > 0 ? insertNode(&(*root)->left, node) : insertNode(&(*root)->right, node);
+
 	if (!returnIsertBool)
 		return false;
 
-	(*root)->height = calcHeight(*root);
 	balanceTree(root);
 
 	return returnIsertBool;
-}
-
-static void printNodeTree(Node* root, int depth) {
-	if (!root)
-		return;
-
-	for (int i = depth; i > 0; i--)
-		printf("      |");
-
-	printf(" %02d : %02d:\n", root->obj, root->height);
-	printNodeTree(root->left, depth + 1);
-	printNodeTree(root->right, depth + 1);
 }
 
 TreeAVL* newTreeAVL() {
@@ -148,20 +151,97 @@ void insertTreeAVL(TreeAVL* tree, int obj) {
 		free(node);
 }
 
-int searchTreeAVL(TreeAVL* tree, int obj) {
+int searchTreeAVL(TreeAVL* tree, int info) {
 	if (!tree)
 		return 0;
 	Node* root = tree->root;
 	while (root) {
-		if (root->obj == obj)
+		if (root->obj == info)
 			return root->obj;
 
-		if (root->obj > obj)
+		if (root->obj > info)
 			root = root->left;
 		else
 			root = root->right;
 	}
 	return 0;
+}
+
+static Node* getBiggerNodeLeft(Node** prior, Node** current) {
+	if (!(*current))
+		return (*prior);
+
+	Node* node = NULL;
+	if ((*current)->right)
+		node = getBiggerNodeLeft(current, &(*current)->right);
+	else {
+		node = (*current);
+		(*prior)->right = (*current)->left;
+	}
+	balanceTree(prior);
+	return node;
+}
+
+static Node* removeNode(Node** root) {
+	Node* node = (*root);
+
+	if (!node->left)
+		*root = node->right;
+	else if (!node->left->right) {
+		node->left->right = node->right;
+		(*root) = node->left;
+	} else {
+		Node* bigLeft = getBiggerNodeLeft(root, &(*root)->left);
+		bigLeft->left = node->left;
+		bigLeft->right = node->right;
+		(*root) = bigLeft;
+	}
+	balanceTree(root);
+	return node;
+}
+
+static Node* searchRemoveNode(Node** root, int info) {
+	if (!(*root))
+		return NULL;
+	if (isEqualInfo(*root, info) == 0)
+		return removeNode(root);
+
+	Node* node = isEqualInfo(*root, info) > 0 ? searchRemoveNode(&(*root)->left, info) : searchRemoveNode(&(*root)->right, info);
+
+	balanceTree(root);
+	return node;
+}
+
+void removeTreeAVL(TreeAVL* tree, int info) {
+	if (!tree)
+		return;
+	Node* node = searchRemoveNode(&tree->root, info);
+	free(node);
+	tree->size--;
+}
+
+void clearTreeAVL(TreeAVL* tree) {
+	if (!tree)
+		return;
+	while (tree->root)
+		removeTreeAVL(tree, tree->root->obj);
+}
+
+void freeTreeAVL(TreeAVL* tree) {
+	clearTreeAVL(tree);
+	free(tree);
+}
+
+static void printNodeTree(Node* root, int depth) {
+	if (!root)
+		return;
+
+	for (int i = depth; i > 0; i--)
+		printf("      |");
+
+	printf(" %02d : %02d:\n", root->obj, root->height);
+	printNodeTree(root->left, depth + 1);
+	printNodeTree(root->right, depth + 1);
 }
 
 void printTreeAVL(TreeAVL* tree) {

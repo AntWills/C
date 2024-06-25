@@ -17,10 +17,11 @@ typedef struct TreeAVL {
 } TreeAVL;
 
 TreeAVL* newTreeAVL();
-void clearTreeAVL(TreeAVL* tree);
 void insertTreeAVL(TreeAVL* tree, int obj);
 int searchTreeAVL(TreeAVL* tree, int obj);
-void removeTreeAVL(TreeAVL* tree, int obj);
+void removeTreeAVL(TreeAVL* tree, int info);
+void clearTreeAVL(TreeAVL* tree);
+void freeTreeAVL(TreeAVL* tree);
 
 void printTreeAVL(TreeAVL* tree);
 

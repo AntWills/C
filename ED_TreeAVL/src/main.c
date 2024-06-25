@@ -9,5 +9,9 @@ int main() {
 	for (int i = 0; i < 12; i++)
 		insertTreeAVL(tree, vector[i]);
 	printTreeAVL(tree);
+	removeTreeAVL(tree, 8);
+	printf("\n-----------------------------------\n");
+	printTreeAVL(tree);
+	clearTreeAVL(tree);
 	return 0;
 }
