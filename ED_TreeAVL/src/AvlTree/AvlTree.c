@@ -6,62 +6,62 @@ static int getHeight(Node* node) {
 	return node->height;
 }
 
-static int higherNum(int x, int y) {
-	return x > y ? x : y;
+static int max(int x, int y) {
+	return (x > y) ? x : y;
 }
 
-static int calcHeight(Node* node) {
-	return higherNum(getHeight(node->left), getHeight(node->right)) + 1;
+static int calculeHeight(Node* node) {
+	return max(getHeight(node->left), getHeight(node->right)) + 1;
 }
 
 static int balancingFactor(Node* node) {
 	return getHeight(node->left) - getHeight(node->right);
 }
 
-static void rotationLeft(Node** root) {
+static void rotationRight(Node** root) {
 	Node* node = (*root)->left;
 
 	(*root)->left = node->right;
 	node->right = *root;
 
-	(*root)->height = calcHeight(*root);
-	node->height = calcHeight(node);
+	(*root)->height = calculeHeight(*root);
+	node->height = calculeHeight(node);
 
 	*root = node;
 }
 
-static void rotationRight(Node** root) {
+static void rotationLeft(Node** root) {
 	Node* node = (*root)->right;
 
 	(*root)->right = node->left;
 	node->left = *root;
 
-	(*root)->height = calcHeight(*root);
-	node->height = calcHeight(node);
+	(*root)->height = calculeHeight(*root);
+	node->height = calculeHeight(node);
 
 	*root = node;
 }
 
-void rotationLeftRight(Node** root) {
-	rotationRight(&(*root)->left);
-	rotationLeft(root);
+void doubleRotationRight(Node** root) {
+	rotationLeft(&(*root)->left);
+	rotationRight(root);
 }
 
-void rotationRightLeft(Node** root) {
-	rotationLeft(&(*root)->right);
-	rotationRight(root);
+void doubleRotationLeft(Node** root) {
+	rotationRight(&(*root)->right);
+	rotationLeft(root);
 }
 
 static void balanceTree(Node** root) {
 	if (!(*root))
 		return;
-	(*root)->height = calcHeight(*root);
+	(*root)->height = calculeHeight(*root);
 	int fator = balancingFactor(*root);
 
 	if (fator > 1)
-		balancingFactor((*root)->left) < 0 ? rotationLeftRight(root) : rotationLeft(root);
+		balancingFactor((*root)->left) < 0 ? doubleRotationRight(root) : rotationRight(root);
 	else if (fator < -1)
-		balancingFactor((*root)->right) > 0 ? rotationRightLeft(root) : rotationRight(root);
+		balancingFactor((*root)->right) > 0 ? doubleRotationLeft(root) : rotationLeft(root);
 }
 
 static Node* newNode(int obj, Node* left, Node* right) {

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
-project(mainTreeAVL)
+project(mainAvlTree)
 
-add_executable(mainTreeAVL src/main.c)
+add_executable(mainAvlTree src/main.c)
 
-add_subdirectory(src/TreeAVL)
+add_subdirectory(src/AvlTree)
 
-target_link_libraries(mainTreeAVL PUBLIC TreeAVL)
+target_link_libraries(mainAvlTree PUBLIC AvlTree)

@@ -1,1 +1,1 @@
-add_library(TreeAVL TreeAVL.h TreeAVL.c)
+add_library(AvlTree AvlTree.h AvlTree.c)
