@@ -1,4 +1,4 @@
-#include "TreeAVL.h"
+#include "AvlTree.h"
 
 static int getHeight(Node* node) {
 	if (!node)
@@ -132,14 +132,14 @@ static bool insertNode(Node** root, Node* node) {
 	return returnIsertBool;
 }
 
-TreeAVL* newTreeAVL() {
-	TreeAVL* tree = (TreeAVL*)malloc(sizeof(TreeAVL));
+AvlTree* newTreeAVL() {
+	AvlTree* tree = (AvlTree*)malloc(sizeof(AvlTree));
 	tree->root = NULL;
 	tree->size = 0;
 	return tree;
 }
 
-void insertTreeAVL(TreeAVL* tree, int obj) {
+void insertAvlTree(AvlTree* tree, int obj) {
 	if (!tree)
 		return;
 	Node* node = newNode(obj, NULL, NULL);
@@ -151,7 +151,7 @@ void insertTreeAVL(TreeAVL* tree, int obj) {
 		free(node);
 }
 
-int searchTreeAVL(TreeAVL* tree, int info) {
+int searchAvlTree(AvlTree* tree, int info) {
 	if (!tree)
 		return 0;
 	Node* root = tree->root;
@@ -212,7 +212,7 @@ static Node* searchRemoveNode(Node** root, int info) {
 	return node;
 }
 
-void removeTreeAVL(TreeAVL* tree, int info) {
+void removeAvlTree(AvlTree* tree, int info) {
 	if (!tree)
 		return;
 	Node* node = searchRemoveNode(&tree->root, info);
@@ -220,15 +220,15 @@ void removeTreeAVL(TreeAVL* tree, int info) {
 	tree->size--;
 }
 
-void clearTreeAVL(TreeAVL* tree) {
+void clearAvlTree(AvlTree* tree) {
 	if (!tree)
 		return;
 	while (tree->root)
-		removeTreeAVL(tree, tree->root->obj);
+		removeAvlTree(tree, tree->root->obj);
 }
 
-void freeTreeAVL(TreeAVL* tree) {
-	clearTreeAVL(tree);
+void freeAvlTree(AvlTree* tree) {
+	clearAvlTree(tree);
 	free(tree);
 }
 
@@ -244,7 +244,7 @@ static void printNodeTree(Node* root, int depth) {
 	printNodeTree(root->right, depth + 1);
 }
 
-void printTreeAVL(TreeAVL* tree) {
+void printAvlTree(AvlTree* tree) {
 	if (!tree)
 		return;
 	printNodeTree(tree->root, 0);
