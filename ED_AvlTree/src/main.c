@@ -9,9 +9,11 @@ int main() {
 	for (int i = 0; i < 12; i++)
 		insertAvlTree(tree, vector[i]);
 	printAvlTree(tree);
-	removeAvlTree(tree, 8);
 	printf("\n-----------------------------------\n");
-	printAvlTree(tree);
-	clearAvlTree(tree);
+	printf("Buscando 15: %d.", searchAvlTree(tree, 15));
+	// removeAvlTree(tree, 8);
+	// printf("\n-----------------------------------\n");
+	// printAvlTree(tree);
+	// clearAvlTree(tree);
 	return 0;
 }

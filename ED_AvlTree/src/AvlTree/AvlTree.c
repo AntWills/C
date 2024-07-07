@@ -56,23 +56,21 @@ static int compareStringObj(char* a, char* b) {
  *  Retorna -1, se node1 for menor que node2.
  */
 static int compareNodes(Node* const node1, Node* const node2) {
+	if (!node1 || !node2)
+		return 0;
 	return compareObj(node1->obj, node2->obj);
 }
 
 /**
- *  Função que compara um obj e uma info.
+ *  Função que compara um obj de um Node e uma info.
  *  Retorna 0, se forem iguais.
- *  Retorna 1, se node for maior que a info.
- *  Retorna -1, se node for menor que a info.
+ *  Retorna 1, se o node for maior que a info.
+ *  Retorna -1, se o node for menor que a info.
  */
-static int isEqualObjInfo(Node* const node, int info) {
+static int compareNodeInfo(Node* const node, int const info) {
 	if (!node)
 		return 0;
-	if (node->obj == info)
-		return 0;
-	if (node->obj > info)
-		return 1;
-	return -1;
+	return compareObj(node->obj, info);
 }
 
 static int getHeight(Node* node) {
@@ -174,26 +172,23 @@ void insertAvlTree(AvlTree* tree, int obj) {
 	if (!tree)
 		return;
 	Node* node = newNode(obj, NULL, NULL);
-	bool existObj = insertNode(&tree->root, node);
+	bool Error = !insertNode(&tree->root, node);
 
-	if (existObj)
-		tree->size++;
-	else
-		free(node);
+	Error
+	    ? free(node)
+	    : tree->size++;
 }
 
 int searchAvlTree(AvlTree* tree, int info) {
 	if (!tree)
 		return 0;
-	Node* root = tree->root;
-	while (root) {
-		if (root->obj == info)
-			return root->obj;
-
-		if (root->obj > info)
-			root = root->left;
-		else
-			root = root->right;
+	Node* current = tree->root;
+	while (current) {
+		if (compareNodeInfo(current, info) == 0)
+			return current->obj;
+		current = (compareNodeInfo(current, info) > 0)
+		              ? current->left
+		              : current->right;
 	}
 	return 0;
 }
@@ -234,10 +229,12 @@ static Node* removeNode(Node** root) {
 static Node* searchRemoveNode(Node** root, int info) {
 	if (!(*root))
 		return NULL;
-	if (isEqualObjInfo(*root, info) == 0)
+	if (compareNodeInfo(*root, info) == 0)
 		return removeNode(root);
 
-	Node* node = isEqualObjInfo(*root, info) > 0 ? searchRemoveNode(&(*root)->left, info) : searchRemoveNode(&(*root)->right, info);
+	Node* node = (compareNodeInfo(*root, info) > 0)
+	                 ? searchRemoveNode(&(*root)->left, info)
+	                 : searchRemoveNode(&(*root)->right, info);
 
 	balanceTree(root);
 	return node;
