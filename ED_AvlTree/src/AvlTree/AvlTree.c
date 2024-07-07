@@ -1,5 +1,80 @@
 #include "AvlTree.h"
 
+static Node* newNode(int obj, Node* left, Node* right) {
+	Node* node = (Node*)malloc(sizeof(Node));
+	node->obj = obj;
+	node->height = 0;
+	node->left = left;
+	node->right = right;
+
+	return node;
+}
+
+#define compareObj(a, b) _Generic((a), \
+	int: compareIntObj,                \
+	float: compareFloatObj,            \
+	char*: compareStringObj)(a, b)
+
+/**
+ *  Função que compara dois ints.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se a for maior que b.
+ *  Retorna -1, se a for menor que b.
+ */
+static int compareIntObj(int a, int b) {
+	if (a == b)
+		return 0;
+	return (a > b) ? 1 : -1;
+}
+
+/**
+ *  Função que compara dois floats.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se a for maior que b.
+ *  Retorna -1, se a for menor que b.
+ */
+static int compareFloatObj(float a, float b) {
+	if (a == b)
+		return 0;
+	return (a > b) ? 1 : -1;
+}
+
+/**
+ *  Função que compara duas strings.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se a for maior que b.
+ *  Retorna -1, se a for menor que b.
+ */
+static int compareStringObj(char* a, char* b) {
+	return strcmp(a, b);
+}
+
+/**
+ *  Função que compara dois Nodes.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se node1 for maior que node2.
+ *  Retorna -1, se node1 for menor que node2.
+ */
+static int compareNodes(Node* const node1, Node* const node2) {
+	return compareObj(node1->obj, node2->obj);
+}
+
+/**
+ *  Função que compara um obj e uma info.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se node for maior que a info.
+ *  Retorna -1, se node for menor que a info.
+ */
+static int isEqualObjInfo(Node* const node, int info) {
+	if (!node)
+		return 0;
+	if (node->obj == info)
+		return 0;
+	if (node->obj > info)
+		return 1;
+	return -1;
+}
+
 static int getHeight(Node* node) {
 	if (!node)
 		return -1;
@@ -64,75 +139,31 @@ static void balanceTree(Node** root) {
 		balancingFactor((*root)->right) > 0 ? doubleRotationLeft(root) : rotationLeft(root);
 }
 
-static Node* newNode(int obj, Node* left, Node* right) {
-	Node* node = (Node*)malloc(sizeof(Node));
-	node->obj = obj;
-	node->height = 0;
-	node->left = left;
-	node->right = right;
-
-	return node;
-}
-
 /**
- *  Função que compara os objs de dois Nodes.
- *  Retorna 0, se forem iguais.
- *  Retorna 1, se node1 for maior que node2.
- *  Retorna -1, se node1 for menor que node2.
- */
-static int isEqualNode(Node* const node1, Node* const node2) {
-	if (!node1 || !node2)
-		return 0;
-	if (node1->obj == node2->obj)
-		return 0;
-	if (node1->obj > node2->obj)
-		return 1;
-	return -1;
-}
-
-/**
- *  Função que compara um obj e uma info.
- *  Retorna 0, se forem iguais.
- *  Retorna 1, se node for maior que a info.
- *  Retorna -1, se node for menor que a info.
- */
-static int isEqualInfo(Node* const node, int info) {
-	if (!node)
-		return 0;
-	if (node->obj == info)
-		return 0;
-	if (node->obj > info)
-		return 1;
-	return -1;
-}
-
-/**
- *  Insere um Node na estrutura de Nodes de uma árvore.
+ *  Insere um novo Node na estrutura de Nodes de uma árvore.
  *  Caso tudo ocorra bem, retorna true.
- *  Caso encontre um obj correspondente ao Node,
- *  retorna false.
+ *  Caso encontre um obj correspondente ao obj contido
+ *  no novo Node, retorna false.
  */
-static bool insertNode(Node** root, Node* node) {
+static bool insertNode(Node** current, Node* node) {
 	if (!node)
 		return false;
-	if ((*root) == NULL) {
-		*root = node;
+	if ((*current) == NULL) {
+		*current = node;
 		return true;
 	}
-	if (isEqualNode(*root, node) == 0)
+	if (compareNodes(*current, node) == 0)
 		return false;
 
-	bool returnIsertBool = isEqualNode(*root, node) > 0 ? insertNode(&(*root)->left, node) : insertNode(&(*root)->right, node);
-
-	if (!returnIsertBool)
+	if (!(compareNodes(*current, node) > 0
+	          ? insertNode(&(*current)->left, node)
+	          : insertNode(&(*current)->right, node)))
 		return false;
-
-	balanceTree(root);
-
-	return returnIsertBool;
+	balanceTree(current);
+	return true;
 }
 
-AvlTree* newTreeAVL() {
+AvlTree* newAvlTree() {
 	AvlTree* tree = (AvlTree*)malloc(sizeof(AvlTree));
 	tree->root = NULL;
 	tree->size = 0;
@@ -203,10 +234,10 @@ static Node* removeNode(Node** root) {
 static Node* searchRemoveNode(Node** root, int info) {
 	if (!(*root))
 		return NULL;
-	if (isEqualInfo(*root, info) == 0)
+	if (isEqualObjInfo(*root, info) == 0)
 		return removeNode(root);
 
-	Node* node = isEqualInfo(*root, info) > 0 ? searchRemoveNode(&(*root)->left, info) : searchRemoveNode(&(*root)->right, info);
+	Node* node = isEqualObjInfo(*root, info) > 0 ? searchRemoveNode(&(*root)->left, info) : searchRemoveNode(&(*root)->right, info);
 
 	balanceTree(root);
 	return node;
