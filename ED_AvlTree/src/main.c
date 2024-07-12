@@ -14,6 +14,7 @@ int main() {
 	// removeAvlTree(tree, 8);
 	// printf("\n-----------------------------------\n");
 	// printAvlTree(tree);
-	// clearAvlTree(tree);
+	clearAvlTree(tree);
+	// printf("\n\nTudo certo");
 	return 0;
 }

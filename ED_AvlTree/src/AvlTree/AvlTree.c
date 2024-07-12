@@ -131,10 +131,15 @@ static void balanceTree(Node** root) {
 	(*root)->height = calculeHeight(*root);
 	int fator = balancingFactor(*root);
 
-	if (fator > 1)
-		balancingFactor((*root)->left) < 0 ? doubleRotationRight(root) : rotationRight(root);
-	else if (fator < -1)
-		balancingFactor((*root)->right) > 0 ? doubleRotationLeft(root) : rotationLeft(root);
+	if (fator > 1) {
+		(balancingFactor((*root)->left) < 0)
+		    ? doubleRotationRight(root)
+		    : rotationRight(root);
+	} else if (fator < -1) {
+		(balancingFactor((*root)->right) > 0)
+		    ? doubleRotationLeft(root)
+		    : rotationLeft(root);
+	}
 }
 
 /**
@@ -244,8 +249,13 @@ void removeAvlTree(AvlTree* tree, int info) {
 	if (!tree)
 		return;
 	Node* node = searchRemoveNode(&tree->root, info);
+	if (!node)
+		return;
 	free(node);
 	tree->size--;
+
+	if (tree->size == 0)
+		tree->root = NULL;
 }
 
 void clearAvlTree(AvlTree* tree) {
