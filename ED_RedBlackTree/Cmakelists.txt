@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.20)
+project(mainRedBlackTree)
+
+add_executable(mainRedBlackTree src/main.c)
+
+add_subdirectory(src/RedBlackTree)
+
+target_link_libraries(mainRedBlackTree PUBLIC RedBlackTree)

@@ -151,7 +151,7 @@ static void balanceTree(Node** root) {
 static bool insertNode(Node** current, Node* node) {
 	if (!node)
 		return false;
-	if ((*current) == NULL) {
+	if (!(*current)) {
 		*current = node;
 		return true;
 	}
