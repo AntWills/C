@@ -12,18 +12,18 @@ static Node* newNode(int obj) {
 
 static int compareNodeInt(Node* const node, int obj);
 
+/**
+ *  Função que compara dois dados qualquer.
+ *  Retorna 0, se forem iguais.
+ *  Retorna 1, se a for maior que b.
+ *  Retorna -1, se a for menor que b.
+ */
 #define compare(a, b) _Generic((a), \
 	int: compareInt,                \
 	Node*: _Generic((b),            \
 	Node *: compareNode,            \
 	int: compareNodeInt))(a, b)
 
-/**
- *  Função que compara dois ints.
- *  Retorna 0, se forem iguais.
- *  Retorna 1, se a for maior que b.
- *  Retorna -1, se a for menor que b.
- */
 static int compareInt(int a, int b) {
 	if (a == b)
 		return 0;
@@ -36,14 +36,6 @@ static int compareNode(Node* const node1, Node* const node2) {
 
 static int compareNodeInt(Node* const node, int obj) {
 	return compare(node->obj, obj);
-}
-
-RedBlackTree* newRedBlackTree() {
-	RedBlackTree* tree = (RedBlackTree*)malloc(sizeof(RedBlackTree));
-	tree->root = NULL;
-	tree->size = 0;
-
-	return tree;
 }
 
 Color getColor(Node* node) {
@@ -102,31 +94,28 @@ int getAction(Node** node) {
 		return 0;
 
 	if (getColor((*node)->left) == RED) {
-		if (getColor((*node)->left->left) == RED) {
-			if (getColor((*node)->right) == RED)
-				return 1;
-			return 2;
+		if (getColor((*node)->right) == BLACK) {
+			if (getColor((*node)->left->left) == RED)
+				return 2;
+			else if (getColor((*node)->left->right))
+				return 4;
 		}
 
-		if (getColor((*node)->left->right) == RED) {
-			if (getColor((*node)->right) == RED)
-				return 1;
-			return 4;
-		}
+		if (getColor((*node)->left->right) == RED ||
+		    getColor((*node)->left->left) == RED)
+			return 1;
 	}
 
 	if (getColor((*node)->right) == RED) {
-		if (getColor((*node)->right->right) == RED) {
-			if (getColor((*node)->left) == RED)
-				return 1;
-			return 3;
+		if (getColor((*node)->left) == BLACK) {
+			if (getColor((*node)->right->right) == RED)
+				return 3;
+			else if (getColor((*node)->right->left) == RED)
+				return 5;
 		}
-
-		if (getColor((*node)->right->left) == RED) {
-			if (getColor((*node)->left) == RED)
-				return 1;
-			return 5;
-		}
+		if (getColor((*node)->right->right) == RED ||
+		    getColor((*node)->right->left) == RED)
+			return 1;
 	}
 	return 0;
 }
@@ -198,16 +187,64 @@ int searchRedBlackTree(RedBlackTree* tree, int info) {
 		return 0;
 	Node* current = tree->root;
 	while (current) {
-		if (compareNodeInfo(current, info) == 0)
+		if (compare(current, info) == 0)
 			return current->obj;
-		current = (compareNodeInfo(current, info) > 0)
+		current = (compare(current, info) > 0)
 		              ? current->left
 		              : current->right;
 	}
 	return 0;
 }
 
+static Node* getBrother(Node* preceding, Node* current) {
+	return compare(preceding->obj, current->obj)
+	           ? preceding->left
+	           : preceding->right;
+}
+
+static Node* getBiggerNodeLeft(Node* current) {
+	if (!current)
+		return NULL;
+	while (current->right)
+		current = current->right;
+
+	return current;
+}
+
+static bool removeNode(Node** preceding, Node* current) {
+	Node* bigLeft = getBiggerNodeLeft(current->left);
+
+	// if()
+}
+
+static bool removeSearchNode(Node** preceding,
+                             Node* current,
+                             int obj) {
+	if (!current)
+		return false;
+
+	if (compare(current->obj, obj) == 0) {
+		return removeNode(preceding, current);
+	}
+
+	if (!(compare(current->obj, obj)
+	          ? removeSearchNode(&current, current->left, obj)
+	          : removeSearchNode(&current, current->right, obj))) {
+		return false;
+	}
+}
+
 void removeRedBlackTree(RedBlackTree* tree, int info) {
+	if (!tree)
+		return;
+	if (!tree->root) {
+		tree->size = 0;
+		return;
+	}
+
+	if (compare(tree->root->obj, info) == 0) {
+		// removeNode()
+	}
 }
 
 void clearAvlTree(RedBlackTree* tree);
