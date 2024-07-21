@@ -89,57 +89,56 @@ static void doubleRotationLeft(Node** root) {
 	rotationLeft(root, true);
 }
 
-int getAction(Node** node) {
-	if (!(*node))
-		return 0;
-
-	if (getColor((*node)->left) == RED) {
-		if (getColor((*node)->right) == BLACK) {
-			if (getColor((*node)->left->left) == RED)
-				return 2;
-			else if (getColor((*node)->left->right))
-				return 4;
-		}
-
-		if (getColor((*node)->left->right) == RED ||
-		    getColor((*node)->left->left) == RED)
-			return 1;
-	}
-
-	if (getColor((*node)->right) == RED) {
-		if (getColor((*node)->left) == BLACK) {
-			if (getColor((*node)->right->right) == RED)
-				return 3;
-			else if (getColor((*node)->right->left) == RED)
-				return 5;
-		}
-		if (getColor((*node)->right->right) == RED ||
-		    getColor((*node)->right->left) == RED)
-			return 1;
-	}
-	return 0;
+static bool childrenRed(Node* node) {
+	if (!node)
+		return false;
+	if (getColor(node->left) == RED ||
+	    getColor(node->right) == RED)
+		return true;
+	return false;
 }
 
-void orgInsertionTree(Node** node) {
-	switch (getAction(node)) {
-	case 0:
-		break;
-	case 1:
-		alterColor(node);
-		break;
-	case 2:
-		rotationRight(node, true);
-		break;
-	case 3:
-		rotationLeft(node, true);
-		break;
-	case 4:
-		doubleRotationRight(node);
-		break;
-	case 5:
-		doubleRotationLeft(node);
-		break;
+static bool twoChildrenRed(Node* node) {
+	if (!node)
+		return false;
+	if (getColor(node->left) == RED &&
+	    getColor(node->right) == RED)
+		return true;
+	return false;
+}
+
+static bool twoChildrenBlack(Node* node) {
+	if (!node)
+		return false;
+	if (getColor(node->left) == BLACK &&
+	    getColor(node->right) == BLACK)
+		return true;
+	return false;
+}
+
+static void orgInsertionTree(Node** node) {
+	if (!(*node) || twoChildrenBlack(*node))
+		return;
+
+	if (twoChildrenRed(*node)) {
+		if (childrenRed((*node)->left) || childrenRed((*node)->right)) {
+			alterColor(node);
+			return;
+		}
 	}
+
+	if (getColor((*node)->left) == RED) {
+		if (getColor((*node)->left->left) == RED)
+			rotationRight(node, true);
+		else if (getColor((*node)->left->right))
+			doubleRotationRight(node);
+		return;
+	}
+
+	if (getColor((*node)->right->right) == RED)
+		rotationLeft(node, true);
+	else if (getColor((*node)->right->left) == RED)
+		doubleRotationLeft(node);
 }
 
 static bool insertionNode(Node** current, Node* node) {
@@ -207,7 +206,6 @@ static Node* getBiggerNodeLeft(Node* current) {
 		return NULL;
 	while (current->right)
 		current = current->right;
-
 	return current;
 }
 
