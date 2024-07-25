@@ -4,6 +4,6 @@
 #include "../List.h"
 
 void bubbleSort(List* list);
-void heapSort(List* list, int max_min);
+void heapSort(List* list, int ordem);
 
 #endif

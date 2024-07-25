@@ -55,3 +55,65 @@ void bubbleSort(List* list) {
 		}
 	} while (swap);
 }
+
+static void orgListHeapMin(List* vetor, int tam, int index) {
+	if (index >= tam) {
+		return;
+	}
+	// filhos a esquerda e direita
+	int left = 2 * index + 1;
+	int right = 2 * index + 2;
+
+	if (left < tam)
+		orgListHeapMin(vetor, tam, left);
+
+	if (right < tam)
+		orgListHeapMin(vetor, tam, right);
+
+	if (left < tam)
+		if (getIndexList(vetor, index) > getIndexList(vetor, left))
+			swapIndexList(vetor, index, left);
+	if (right < tam)
+		if (getIndexList(vetor, index) > getIndexList(vetor, right))
+			swapIndexList(vetor, index, right);
+}
+
+static void orgListHeapMax(List* vetor, int tam, int index) {
+	if (index >= tam) {
+		return;
+	}
+	// filhos a esquerda e direita
+	int left = 2 * index + 1;
+	int right = 2 * index + 2;
+
+	if (left < tam)
+		orgListHeapMax(vetor, tam, left);
+
+	if (right < tam)
+		orgListHeapMax(vetor, tam, right);
+
+	if (left < tam)
+		if (getIndexList(vetor, index) < getIndexList(vetor, left))
+			swapIndexList(vetor, index, left);
+	if (right < tam)
+		if (getIndexList(vetor, index) < getIndexList(vetor, right))
+			swapIndexList(vetor, index, right);
+}
+
+/** Organiza a lista usando heapSort.
+ *  0 - Crescente.
+ *  1 - Decrescente.
+ */
+void heapSort(List* list, int ordem) {
+	if (ordem == 0) {
+		for (int i = list->size - 1; i >= 0; i--) {
+			orgListHeapMax(list, i + 1, 0);
+			swapIndexList(list, 0, i);
+		}
+		return;
+	}
+	for (int i = list->size - 1; i >= 0; i--) {
+		orgListHeapMin(list, i + 1, 0);
+		swapIndexList(list, 0, i);
+	}
+}
