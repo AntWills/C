@@ -1,6 +1,7 @@
 #include "RedBlakcTree.h"
 
 static Node* rootRedBlackTree = NULL;
+// static Node* NULL = NULL;
 
 static Node* newNode(int obj) {
 	Node* node = (Node*)malloc(sizeof(Node));
@@ -138,7 +139,7 @@ static bool twoRedChildren(Node* node) {
 
 static bool twoBlackChildren(Node* node) {
 	if (!node)
-		return false;
+		return true;
 	if (getColor(node->left) == BLACK &&
 	    getColor(node->right) == BLACK)
 		return true;
@@ -220,18 +221,43 @@ void insertionRedBlackTree(RedBlackTree* tree, int obj) {
 	}
 }
 
-int searchRedBlackTree(RedBlackTree* tree, int info) {
-	if (!tree)
-		return 0;
-	Node* current = tree->root;
+static Node* searchNode(Node* current, int info) {
 	while (current) {
 		if (compare(current, info) == 0)
-			return current->obj;
+			return current;
 		current = (compare(current, info) > 0)
 		              ? current->left
 		              : current->right;
 	}
+	return NULL;
+}
+
+int searchRedBlackTree(RedBlackTree* tree, int info) {
+	if (!tree)
+		return 0;
+	Node* node = searchNode(tree->root, info);
+	if (node)
+		return node->obj;
 	return 0;
+}
+
+static Node* getBiggerLeftNode(Node* node) {
+	if (!node)
+		return NULL;
+	while (node->right)
+		node = node->right;
+	return node;
+}
+
+static Node* passoCED_esq(Node* removeNode, Node* parent) {
+}
+
+static void removeNode(Node* node, Node* parent) {
+	if (!node)
+		return;
+	while (node) {
+		// if()
+	}
 }
 
 void removeRedBlackTree(RedBlackTree* tree, int info) {
@@ -240,6 +266,37 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 	if (!tree->root) {
 		tree->size = 0;
 		return;
+	}
+
+	Node* current = searchNode(tree->root, info);
+	if (!current)
+		return;
+
+	Node* bigLeft = getBiggerLeftNode(current->left);
+
+	if (!bigLeft && !current->right) {
+	} else if (!bigLeft) {
+	} else {
+		current->obj = bigLeft->obj;
+
+		if (getColor(bigLeft) == RED) {
+			if (current->left == bigLeft)
+				current->left = bigLeft->left;
+			else
+				bigLeft->parent->right = bigLeft->left;
+			freeNode(bigLeft);
+			return;
+		}
+
+		if (getColor(bigLeft->left) == RED) {
+			bigLeft->left->color = BLACK;
+			if (current->left == bigLeft)
+				current->left = bigLeft->left;
+			else
+				bigLeft->parent->right = bigLeft->left;
+			freeNode(bigLeft);
+			return;
+		}
 	}
 
 	if (rootRedBlackTree) {
