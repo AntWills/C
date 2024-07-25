@@ -13,7 +13,7 @@ typedef int Color;
 typedef struct Node {
 	int obj;
 	Color color;
-	struct Node *left, *right;
+	struct Node *left, *right, *parent;
 } Node;
 
 typedef struct RedBlackTree {

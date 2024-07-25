@@ -1,11 +1,14 @@
 #include "RedBlakcTree.h"
 
+static Node* rootRedBlackTree = NULL;
+
 static Node* newNode(int obj) {
 	Node* node = (Node*)malloc(sizeof(Node));
 	node->obj = obj;
 	node->color = RED;
 	node->left = NULL;
 	node->right = NULL;
+	node->parent = NULL;
 
 	return node;
 }
@@ -14,6 +17,8 @@ static void freeNode(Node* node) {
 	free(node);
 }
 
+static int compareInt(int a, int b);
+static int compareNode(Node* const node1, Node* const node2);
 static int compareNodeInt(Node* const node, int obj);
 
 /**
@@ -55,42 +60,62 @@ static void alterColor(Node** node) {
 	(*node)->right->color = BLACK;
 }
 
-static void rotationRight(Node** root, bool mudarDeCor) {
-	Node* node = (*root)->left;
+static void rotationRight(Node* root, bool mudarDeCor) {
+	Node* parent = root->parent;
+	Node* node = root->left;
 
-	(*root)->left = node->right;
-	node->right = *root;
+	root->left = node->right;
+	node->right = root;
 
 	if (mudarDeCor) {
-		(*root)->color = RED;
+		root->color = RED;
 		node->color = BLACK;
 	}
 
-	*root = node;
+	root->parent = node;
+	if (!parent) {
+		rootRedBlackTree = node;
+		return;
+	}
+
+	if (parent->left == root)
+		parent->left = node;
+	else
+		parent->right = node;
 }
 
-static void rotationLeft(Node** root, bool alterColor) {
-	Node* node = (*root)->right;
+static void rotationLeft(Node* root, bool alterColor) {
+	Node* parent = root->parent;
+	Node* node = root->right;
 
-	(*root)->right = node->left;
-	node->left = *root;
+	root->right = node->left;
+	node->left = root;
 
 	if (alterColor) {
-		(*root)->color = RED;
+		root->color = RED;
 		node->color = BLACK;
 	}
 
-	*root = node;
+	root->parent = node;
+	if (!parent) {
+		rootRedBlackTree = node;
+		return;
+	}
+
+	if (parent->left == root)
+		parent->left = node;
+	else
+		parent->right = node;
 }
 
 static void doubleRotationRight(Node** node) {
-	rotationLeft(&(*node)->left, false);
-	rotationRight(node, true);
+	rotationLeft((*node)->left, false);
+	rotationRight(*node, true);
 }
 
 static void doubleRotationLeft(Node** root) {
-	rotationRight(&(*root)->right, false);
-	rotationLeft(root, true);
+	rotationRight((*root)->right, false);
+	rotationLeft(*root, true);
 }
 
 static bool redChildren(Node* node) {
@@ -133,14 +158,14 @@ static void orgInsertionTree(Node** node) {
 
 	if (getColor((*node)->left) == RED) {
 		if (getColor((*node)->left->left) == RED)
-			rotationRight(node, true);
+			rotationRight(*node, true);
 		else if (getColor((*node)->left->right))
 			doubleRotationRight(node);
 		return;
 	}
 
 	if (getColor((*node)->right->right) == RED)
-		rotationLeft(node, true);
+		rotationLeft(*node, true);
 	else if (getColor((*node)->right->left) == RED)
 		doubleRotationLeft(node);
 }
@@ -160,6 +185,10 @@ static bool insertionNode(Node** current, Node* node) {
 	          ? insertionNode(&(*current)->left, node)
 	          : insertionNode(&(*current)->right, node)))
 		return false;
+
+	if ((*current)->left == node || (*current)->right == node)
+		node->parent = *current;
+
 	orgInsertionTree(current);
 	return true;
 }
@@ -181,8 +210,14 @@ void insertionRedBlackTree(RedBlackTree* tree, int obj) {
 		free(node);
 	else
 		tree->size++;
-	if (tree->root)
+	if (rootRedBlackTree) {
+		tree->root = rootRedBlackTree;
+		rootRedBlackTree = NULL;
+	}
+	if (tree->root) {
 		tree->root->color = BLACK;
+		tree->root->parent = NULL;
+	}
 }
 
 int searchRedBlackTree(RedBlackTree* tree, int info) {
@@ -199,186 +234,6 @@ int searchRedBlackTree(RedBlackTree* tree, int info) {
 	return 0;
 }
 
-static Node* getBrother(Node* preceding, Node* current) {
-	return (compare(preceding, current) > 0)
-	           ? preceding->right
-	           : preceding->left;
-}
-
-static void setChildren(Node* preceding,
-                        Node* currentChildren,
-                        Node* newChildren) {
-	if (compare(preceding, currentChildren) > 0)
-		preceding->left = newChildren;
-	else
-		preceding->right = newChildren;
-}
-
-//
-static Node* auxiGetNode(Node* node) {
-	static Node* auxi;
-	if (node) {
-		auxi = node;
-		return NULL;
-	}
-	return auxi;
-}
-
-static int getAction(Node** preceding,
-                     Node* nodeBlackBlack,
-                     Node* brother) {
-	if (!nodeBlackBlack && !brother)
-		return 0;
-	if (getColor(brother) == RED) {
-		if (compare(*preceding, brother) > 0)
-			return 2;  //
-		return 1;
-	}
-	Color left = getColor(brother->left);
-	Color right = getColor(brother->right);
-
-	if (getColor(brother->left) == BLACK && getColor(brother->right) == BLACK) {
-		return 3;
-	}
-
-	if (getColor(brother->left) == BLACK) {
-		if (compare(*preceding, brother) > 0)
-			return 5;
-		return 4;
-	}
-}
-
-static int orgRemoveTree(Node** preceding,
-                         Node* nodeBlackBlack,
-                         Node* brother) {
-	Node* teste = NULL;
-	switch (getAction(preceding, nodeBlackBlack, brother)) {
-	case 1:
-		// { irmão RED }
-		// irmão vire BLACK e pai vira RED.
-		// e depois rotacionar o pai para esquerda.
-		// chama novamente a função orgRemoveTree.
-		rotationLeft(preceding, true);
-		teste = (*preceding)->left;
-		return true;
-		break;
-	case 2:
-		// { irmão RED }
-		// irmão vire BLACK e pai vira RED.
-		// e depois rotacionar o pai para esquerda.
-		// chama novamente a função orgRemoveTree.
-		rotationRight(preceding, true);
-		teste = (*preceding)->right;
-		return true;
-		break;
-	case 3:
-		// { irmão BLACK, com filhos BLACK }
-		// irmão fica RED,
-		// se p pai for RED, fica BLACK e encerrar.
-		// se não for, subir a verificação para o pai.
-		brother->color = RED;
-		if (getColor(*preceding) == RED) {
-			(*preceding)->color = BLACK;
-			return false;
-		}
-		return true;
-		break;
-	case 4:
-
-		break;
-	case 5:
-		// { irmão BLACK e um dos filhos BLACK }
-		// irmão fica RED e rotação a direita no filho a esquerda.
-
-		brother->color = RED;
-		rotationRight(&brother->left, false);
-		break;
-	}
-}
-
-static int removeBiggerNodeLeft(Node** preceding,
-                                Node* nodeRemove,
-                                Color nodeColor) {
-	if (!nodeRemove)
-		return false;
-	if (nodeRemove->right) {
-		if (!removeBiggerNodeLeft(&nodeRemove, nodeRemove->right, nodeColor))
-			return false;
-	} else if (getColor(nodeRemove) == RED) {
-		setChildren(*preceding, nodeRemove, nodeRemove->left);
-		auxiGetNode(nodeRemove);
-		return false;
-	} else if (getColor(nodeRemove->left) == RED) {
-		nodeRemove->left->color = BLACK;
-		setChildren(*preceding, nodeRemove, nodeRemove->left);
-		auxiGetNode(nodeRemove);
-		return false;
-	} else {
-		setChildren(*preceding, nodeRemove, nodeRemove->left);
-		auxiGetNode(nodeRemove);
-	}
-
-	return orgRemoveTree(preceding, nodeRemove->left,
-	                     getBrother(*preceding, nodeRemove));
-}
-
-// static Node* getBiggerNodeLeft(Node* current) {
-// 	if (!current)
-// 		return NULL;
-// 	while (current->right)
-// 		current = current->right;
-// 	return current;
-// }
-
-static int removeNode(Node** preceding, Node* current) {
-	// Node* bigLeft = getBiggerNodeLeft(current->left);
-	bool auxi = true;
-	Node* nodeAuxi = NULL;
-
-	if (!current->left && !current->right) {
-		if (getColor(current) == RED) {
-			auxi = false;
-		}
-
-		setChildren(*preceding, current, NULL);
-	} else if (!current->left) {
-		setChildren(*preceding, current, current->right);
-	} else {
-		auxi = removeBiggerNodeLeft(&current, current->left, getColor(current));
-		nodeAuxi = auxiGetNode(NULL);
-
-		nodeAuxi->left = current->left;
-		nodeAuxi->right = current->right;
-		nodeAuxi->color = current->color;
-
-		setChildren(*preceding, current, nodeAuxi);
-	}
-	if (!auxi) {
-		freeNode(current);
-		return false;
-	}
-
-	orgRemoveTree(preceding, nodeAuxi, getBrother(*preceding, current));
-	freeNode(current);
-}
-
-static int removeSearchNode(Node** preceding,
-                            Node* current,
-                            int obj) {
-	if (!current)
-		return false;
-
-	if (compare(current->obj, obj) == 0) {
-		return removeNode(preceding, current);
-	}
-
-	if (!(compare(current->obj, obj) > 0
-	          ? removeSearchNode(&current, current->left, obj)
-	          : removeSearchNode(&current, current->right, obj))) {
-		return false;
-	}
-}
-
 void removeRedBlackTree(RedBlackTree* tree, int info) {
 	if (!tree)
 		return;
@@ -387,10 +242,10 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 		return;
 	}
 
-	if (compare(tree->root->obj, info) == 0) {
-		// removeNode()
+	if (rootRedBlackTree) {
+		tree->root = rootRedBlackTree;
+		rootRedBlackTree = NULL;
 	}
-	removeSearchNode(NULL, tree->root, info);
 }
 
 void clearAvlTree(RedBlackTree* tree);
