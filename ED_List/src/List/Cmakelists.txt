@@ -1,1 +1,4 @@
 add_library(List List.h List.c)
+add_subdirectory(sortList)
+
+target_link_libraries(List PUBLIC SortList)

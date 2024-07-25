@@ -1,4 +1,5 @@
 #include "List.h"
+#include "sortList/SortList.h"
 
 static Node* newNode(int obj, Node* prior, Node* next) {
 	Node* node = (Node*)malloc(sizeof(Node));
@@ -228,25 +229,5 @@ void printReverseList(List* list) {
 }
 
 void sortList(List* list) {
-	if (!list)
-		return;
-	Node* auxi = list->firt;
-	Node* prior = NULL;
-	bool swap = false;
-
-	do {
-		swap = false;
-		auxi = list->firt;
-		prior = auxi;
-		auxi = auxi->next;
-
-		while (auxi) {
-			if (prior->obj > auxi->obj) {
-				swapNodeList(list, prior, auxi);
-				swap = true;
-			}
-			prior = auxi;
-			auxi = auxi->next;
-		}
-	} while (swap);
+	bubbleSort(list);
 }
