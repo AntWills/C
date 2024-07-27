@@ -25,11 +25,12 @@ int main() {
 		insertionRedBlackTree(tree, vetor[i]);
 	printRedBlackTree(tree);
 
-	return 0;
-	removeRedBlackTree(tree, 124);
+	// return 0;
+	removeRedBlackTree(tree, 61);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
 
+	return 0;
 	removeRedBlackTree(tree, 105);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
