@@ -74,6 +74,7 @@ static void rotationRight(Node* root, bool mudarDeCor) {
 	}
 
 	root->parent = node;
+	node->parent = parent;
 	if (!parent) {
 		rootRedBlackTree = node;
 		return;
@@ -98,6 +99,7 @@ static void rotationLeft(Node* root, bool alterColor) {
 	}
 
 	root->parent = node;
+	node->parent = parent;
 	if (!parent) {
 		rootRedBlackTree = node;
 		return;
@@ -139,16 +141,19 @@ static bool twoRedChildren(Node* node) {
 
 static bool twoBlackChildren(Node* node) {
 	if (!node)
-		return true;
+		return false;
 	if (getColor(node->left) == BLACK &&
 	    getColor(node->right) == BLACK)
 		return true;
 	return false;
 }
 
-static void orgInsertionTree(Node** node) {
+static void orgInsertionTree(Node** node, int obj) {
 	if (!(*node) || twoBlackChildren(*node))
 		return;
+	if (obj == 64) {
+		printf("");
+	}
 
 	if (twoRedChildren(*node)) {
 		if (redChildren((*node)->left) || redChildren((*node)->right)) {
@@ -179,6 +184,10 @@ static bool insertionNode(Node** current, Node* node) {
 		return true;
 	}
 
+	if (node->obj == 64) {
+		printf("");
+	}
+
 	if (compare(*current, node) == 0)
 		return false;
 
@@ -190,7 +199,7 @@ static bool insertionNode(Node** current, Node* node) {
 	if ((*current)->left == node || (*current)->right == node)
 		node->parent = *current;
 
-	orgInsertionTree(current);
+	orgInsertionTree(current, node->obj);
 	return true;
 }
 
@@ -241,7 +250,7 @@ int searchRedBlackTree(RedBlackTree* tree, int info) {
 	return 0;
 }
 
-static Node* getBiggerLeftNode(Node* node) {
+static Node* getMaxNodeInLeftSubtree(Node* node) {
 	if (!node)
 		return NULL;
 	while (node->right)
@@ -249,14 +258,84 @@ static Node* getBiggerLeftNode(Node* node) {
 	return node;
 }
 
-static Node* passoCED_esq(Node* removeNode, Node* parent) {
+static Node* getMinNodeInRightSubtree(Node* node) {
+	if (!node)
+		return NULL;
+	while (node->left)
+		node = node->left;
+	return node;
 }
 
-static void removeNode(Node* node, Node* parent) {
+static Node* passoCED_esq(Node* removeNode, Node* parent, Node* root) {
+	Node* brother = parent->right;
+
+	// Irmão vermelho.
+	if (getColor(brother) == RED) {
+		rotationLeft(parent, true);
+		brother = parent->right;
+	}
+
+	// Caso onde a elevação do problema é necessaria.
+	if (!brother) {
+		if (getColor(brother->left) == BLACK &&
+		    getColor(brother->right) == BLACK) {
+			brother->color = RED;
+			return parent;
+		}
+	}
+
+	// Se a direita do irmão for preta.
+	if (getColor(brother->right) == BLACK) {
+		rotationRight(brother, true);
+		brother = parent->right;
+	}
+
+	// Se o imrão a direita já for vermelho, pode encerrar
+	brother->color = parent->color;
+	parent->color = BLACK;
+	brother->right->color = BLACK;
+	rotationLeft(parent, false);
+	return root;
+}
+
+static Node* passoCED_dir(Node* removeNode, Node* parent, Node* root) {
+	Node* brother = parent->left;
+
+	// Irmão vermelho.
+	if (getColor(brother) == RED) {
+		rotationRight(parent, true);
+		brother = parent->right;
+	}
+
+	// Caso onde a elevação do problema é necessaria.
+	if (getColor(brother->left) == BLACK &&
+	    getColor(brother->right) == BLACK) {
+		brother->color = RED;
+		return parent;
+	}
+
+	// Se a esquerda do irmão for preta.
+	if (getColor(brother->left) == BLACK) {
+		rotationLeft(brother, true);
+		brother = parent->left;
+	}
+
+	// Se o imrão a esquerda já for vermelho, pode encerrar
+	brother->color = parent->color;
+	parent->color = BLACK;
+	brother->left->color = BLACK;
+	rotationLeft(parent, false);
+	return root;
+}
+
+static void removeNode(Node* node, Node* parent, Node* root) {
 	if (!node)
 		return;
-	while (node) {
-		// if()
+	while (node != root) {
+		if (parent->left == node)
+			passoCED_esq(node, parent, root);
+		else
+			passoCED_dir(node, parent, root);
 	}
 }
 
@@ -272,7 +351,7 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 	if (!current)
 		return;
 
-	Node* bigLeft = getBiggerLeftNode(current->left);
+	Node* bigLeft = getMaxNodeInLeftSubtree(current->left);
 
 	if (!bigLeft && !current->right) {
 	} else if (!bigLeft) {
@@ -299,6 +378,10 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 		}
 	}
 
+	removeNode(bigLeft, bigLeft->parent, tree->root);
+	freeNode(bigLeft);
+
+	tree->size--;
 	if (rootRedBlackTree) {
 		tree->root = rootRedBlackTree;
 		rootRedBlackTree = NULL;
