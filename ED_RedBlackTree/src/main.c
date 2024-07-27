@@ -15,7 +15,7 @@ void printVetor(int vetor[], int tam) {
 
 int main() {
 	RedBlackTree* tree = newRedBlackTree();
-	int tam = 20;
+	int tam = 10;
 	int vetor[tam];
 
 	preencherVetor(vetor, tam);
@@ -26,12 +26,12 @@ int main() {
 	printRedBlackTree(tree);
 
 	// return 0;
-	removeRedBlackTree(tree, 61);
+	removeRedBlackTree(tree, 78);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
 
-	return 0;
-	removeRedBlackTree(tree, 105);
+	// return 0;
+	removeRedBlackTree(tree, 64);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
 	return 0;

@@ -1,7 +1,6 @@
 #include "RedBlakcTree.h"
 
-static Node* rootRedBlackTree = NULL;
-// static Node* NULL = NULL;
+static Node* auxiRootRedBlackTree = NULL;
 
 static Node* newNode(int obj) {
 	Node* node = (Node*)malloc(sizeof(Node));
@@ -78,7 +77,7 @@ static void rotationRight(Node* root, bool mudarDeCor) {
 	if (root->left)
 		root->left->parent = root;
 	if (!parent) {
-		rootRedBlackTree = node;
+		auxiRootRedBlackTree = node;
 		return;
 	}
 
@@ -105,7 +104,7 @@ static void rotationLeft(Node* root, bool alterColor) {
 	if (root->right)
 		root->right->parent = root;
 	if (!parent) {
-		rootRedBlackTree = node;
+		auxiRootRedBlackTree = node;
 		return;
 	}
 
@@ -125,7 +124,7 @@ static void doubleRotationLeft(Node** root) {
 	rotationLeft(*root, true);
 }
 
-static bool redChildren(Node* node) {
+static bool OneRedSon(Node* node) {
 	if (!node)
 		return false;
 	if (getColor(node->left) == RED ||
@@ -134,7 +133,7 @@ static bool redChildren(Node* node) {
 	return false;
 }
 
-static bool twoRedChildren(Node* node) {
+static bool twoRedSon(Node* node) {
 	if (!node)
 		return false;
 	if (getColor(node->left) == RED &&
@@ -143,7 +142,7 @@ static bool twoRedChildren(Node* node) {
 	return false;
 }
 
-static bool twoBlackChildren(Node* node) {
+static bool twoBlackSon(Node* node) {
 	if (!node)
 		return false;
 	if (getColor(node->left) == BLACK &&
@@ -153,14 +152,11 @@ static bool twoBlackChildren(Node* node) {
 }
 
 static void orgInsertionTree(Node** node, int obj) {
-	if (!(*node) || twoBlackChildren(*node))
+	if (!(*node) || twoBlackSon(*node))
 		return;
-	// if (obj == 64) {
-	// 	printf("");
-	// }
 
-	if (twoRedChildren(*node)) {
-		if (redChildren((*node)->left) || redChildren((*node)->right)) {
+	if (twoRedSon(*node)) {
+		if (OneRedSon((*node)->left) || OneRedSon((*node)->right)) {
 			alterColor(node);
 			return;
 		}
@@ -187,10 +183,6 @@ static bool insertionNode(Node** current, Node* node) {
 		*current = node;
 		return true;
 	}
-
-	// if (node->obj == 58) {
-	// 	printf("");
-	// }
 
 	if (compare(*current, node) == 0)
 		return false;
@@ -224,9 +216,9 @@ void insertionRedBlackTree(RedBlackTree* tree, int obj) {
 		free(node);
 	else
 		tree->size++;
-	if (rootRedBlackTree) {
-		tree->root = rootRedBlackTree;
-		rootRedBlackTree = NULL;
+	if (auxiRootRedBlackTree) {
+		tree->root = auxiRootRedBlackTree;
+		auxiRootRedBlackTree = NULL;
 	}
 	if (tree->root) {
 		tree->root->color = BLACK;
@@ -270,7 +262,7 @@ static Node* getMinNodeInRightSubtree(Node* node) {
 	return node;
 }
 
-static Node* passoCED_esq(Node* removeNode, Node* parent, Node* root) {
+static Node* fixOrPropagateLeft(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->right;
 
 	// Irmão vermelho.
@@ -280,21 +272,27 @@ static Node* passoCED_esq(Node* removeNode, Node* parent, Node* root) {
 	}
 
 	// Caso onde a elevação do problema é necessaria.
-	if (!brother) {
-		if (getColor(brother->left) == BLACK &&
-		    getColor(brother->right) == BLACK) {
-			brother->color = RED;
-			return parent;
+	if (twoBlackSon(brother)) {
+		brother->color = RED;
+
+		// Se o pai também for vermelho, há uma exceção e encerramos a verificação.
+		// Se não for, procede normalmente.
+		if (parent->color == RED) {
+			parent->color = BLACK;
+			return root;
 		}
+
+		return parent;
 	}
 
-	// Se a direita do irmão for preta.
+	// Ajuste para caso o sobrinho a esquerda seja vermeho.
 	if (getColor(brother->right) == BLACK) {
 		rotationRight(brother, true);
 		brother = parent->right;
 	}
 
-	// Se o imrão a direita já for vermelho, pode encerrar
+	// Se o sobrinho a direita já for vermelho, execute os passos seguinte
+	// e encerre.
 	brother->color = parent->color;
 	parent->color = BLACK;
 	brother->right->color = BLACK;
@@ -302,7 +300,7 @@ static Node* passoCED_esq(Node* removeNode, Node* parent, Node* root) {
 	return root;
 }
 
-static Node* passoCED_dir(Node* removeNode, Node* parent, Node* root) {
+static Node* fixOrPropagateRight(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->left;
 
 	// Irmão vermelho.
@@ -312,19 +310,23 @@ static Node* passoCED_dir(Node* removeNode, Node* parent, Node* root) {
 	}
 
 	// Caso onde a elevação do problema é necessaria.
-	if (getColor(brother->left) == BLACK &&
-	    getColor(brother->right) == BLACK) {
+	if (twoBlackSon(brother)) {
 		brother->color = RED;
+		if (parent->color == RED) {
+			parent->color = BLACK;
+			return root;
+		}
 		return parent;
 	}
 
-	// Se a esquerda do irmão for preta.
+	// Ajuste para caso o sobrinho a direita seja vermeho.
 	if (getColor(brother->left) == BLACK) {
 		rotationLeft(brother, true);
 		brother = parent->left;
 	}
 
-	// Se o imrão a esquerda já for vermelho, pode encerrar
+	// Se o sobrinho a esquerda já for vermelho, execute os passos seguinte
+	// e encerre.
 	brother->color = parent->color;
 	parent->color = BLACK;
 	brother->left->color = BLACK;
@@ -332,19 +334,19 @@ static Node* passoCED_dir(Node* removeNode, Node* parent, Node* root) {
 	return root;
 }
 
-static void removeNode(Node* node, Node* parent, Node* root) {
-	if (!node)
+static void removeNode(Node* removeNode, Node* parent, Node* root) {
+	if (!removeNode)
 		return;
-	while (node != root) {
-		if (parent->left == node)
-			node = passoCED_esq(node, parent, root);
+	while (removeNode != root) {
+		if (parent->left == removeNode)
+			removeNode = fixOrPropagateLeft(removeNode, parent, root);
 		else
-			node = passoCED_dir(node, parent, root);
-		parent = node->parent;
+			removeNode = fixOrPropagateRight(removeNode, parent, root);
+		parent = removeNode->parent;
 	}
 }
 
-static bool removeLeft(Node* succesor, Node* current) {
+static bool simpleRemoveLeft(Node* succesor, Node* current) {
 	if (getColor(succesor) == RED) {
 		if (current->left == succesor)
 			current->left = succesor->left;
@@ -366,7 +368,7 @@ static bool removeLeft(Node* succesor, Node* current) {
 	return false;
 }
 
-static bool removeRight(Node* succesor, Node* current) {
+static bool simpleRemoveRight(Node* succesor, Node* current) {
 	if (getColor(succesor) == RED) {
 		if (current->right == succesor)
 			current->right = succesor->right;
@@ -414,6 +416,7 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 				current->parent->left = NULL;
 			else
 				current->parent->right = NULL;
+			freeNode(current);
 			return;
 		}
 		succesor = current;
@@ -421,13 +424,13 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 		succesor = getMinNodeInRightSubtree(current->left);
 		current->obj = succesor->obj;
 
-		if (removeRight(succesor, current))
+		if (simpleRemoveRight(succesor, current))
 			return;
 	} else {
 		succesor = getMaxNodeInLeftSubtree(current->left);
 		current->obj = succesor->obj;
 
-		if (removeLeft(succesor, current))
+		if (simpleRemoveLeft(succesor, current))
 			return;
 	}
 
@@ -440,9 +443,9 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 	freeNode(succesor);
 
 	tree->size--;
-	if (rootRedBlackTree) {
-		tree->root = rootRedBlackTree;
-		rootRedBlackTree = NULL;
+	if (auxiRootRedBlackTree) {
+		tree->root = auxiRootRedBlackTree;
+		auxiRootRedBlackTree = NULL;
 	}
 }
 
