@@ -101,7 +101,7 @@ static void rotationLeft(Node* root, bool alterColor) {
 
 	root->parent = node;
 	node->parent = parent;
-	if (root->right)
+	if (root->right != NULL)
 		root->right->parent = root;
 	if (!parent) {
 		auxiRootRedBlackTree = node;
@@ -262,7 +262,7 @@ static Node* getMinNodeInRightSubtree(Node* node) {
 	return node;
 }
 
-static Node* fixOrPropagateLeft(Node* removeNode, Node* parent, Node* root) {
+static Node* fixOrRaiseLeft(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->right;
 
 	// Irmão vermelho.
@@ -300,7 +300,7 @@ static Node* fixOrPropagateLeft(Node* removeNode, Node* parent, Node* root) {
 	return root;
 }
 
-static Node* fixOrPropagateRight(Node* removeNode, Node* parent, Node* root) {
+static Node* fixOrRaiseRight(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->left;
 
 	// Irmão vermelho.
@@ -334,14 +334,12 @@ static Node* fixOrPropagateRight(Node* removeNode, Node* parent, Node* root) {
 	return root;
 }
 
-static void removeNode(Node* removeNode, Node* parent, Node* root) {
-	if (!removeNode)
-		return;
+static void fixOrRaise(Node* removeNode, Node* parent, Node* root) {
 	while (removeNode != root) {
 		if (parent->left == removeNode)
-			removeNode = fixOrPropagateLeft(removeNode, parent, root);
+			removeNode = fixOrRaiseLeft(removeNode, parent, root);
 		else
-			removeNode = fixOrPropagateRight(removeNode, parent, root);
+			removeNode = fixOrRaiseRight(removeNode, parent, root);
 		parent = removeNode->parent;
 	}
 }
@@ -352,7 +350,8 @@ static bool simpleRemoveLeft(Node* succesor, Node* current) {
 			current->left = succesor->left;
 		else
 			succesor->parent->right = succesor->left;
-		freeNode(succesor);
+		if (succesor->left)
+			succesor->left->parent = succesor->parent;
 		return true;
 	}
 
@@ -362,7 +361,8 @@ static bool simpleRemoveLeft(Node* succesor, Node* current) {
 			current->left = succesor->left;
 		else
 			succesor->parent->right = succesor->left;
-		freeNode(succesor);
+		if (succesor->left)
+			succesor->left->parent = succesor->parent;
 		return true;
 	}
 	return false;
@@ -374,7 +374,8 @@ static bool simpleRemoveRight(Node* succesor, Node* current) {
 			current->right = succesor->right;
 		else
 			succesor->parent->left = succesor->right;
-		freeNode(succesor);
+		if (succesor->right)
+			succesor->right->parent = succesor->parent;
 		return true;
 	}
 
@@ -384,10 +385,56 @@ static bool simpleRemoveRight(Node* succesor, Node* current) {
 			current->right = succesor->right;
 		else
 			succesor->parent->left = succesor->right;
-		freeNode(succesor);
+		if (succesor->right)
+			succesor->right->parent = succesor->parent;
 		return true;
 	}
 	return false;
+}
+
+static Node* removeNode(Node* removeNode, Node* root) {
+	Node* succesor = removeNode->left
+	                     ? getMaxNodeInLeftSubtree(removeNode->left)
+	                     : getMinNodeInRightSubtree(removeNode->right);
+
+	if (!succesor) {
+		if (getColor(removeNode) == RED) {
+			if (removeNode->parent->left == removeNode)
+				removeNode->parent->left = NULL;
+			else
+				removeNode->parent->right = NULL;
+			return removeNode;
+		}
+		succesor = removeNode;
+	} else
+		removeNode->obj = succesor->obj;
+
+	if ((succesor->left)
+	        ? simpleRemoveLeft(succesor, removeNode)
+	        : simpleRemoveRight(succesor, removeNode))
+		return succesor;
+
+	fixOrRaise(succesor, succesor->parent, root);
+
+	if (removeNode->left == succesor) {
+		removeNode->left = succesor->left;
+		return succesor;
+	} else if (removeNode->right == succesor) {
+		removeNode->right = succesor->left;
+		return succesor;
+	}
+
+	if (succesor->parent->left == succesor) {
+		succesor->parent->left = succesor->right;
+		if (succesor->right)
+			succesor->right->parent = succesor->parent;
+	} else {
+		succesor->parent->right = succesor->left;
+		if (succesor->left)
+			succesor->left->parent = succesor->parent;
+	}
+
+	return succesor;
 }
 
 void removeRedBlackTree(RedBlackTree* tree, int info) {
@@ -408,39 +455,7 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 		return;
 	}
 
-	Node* succesor = NULL;
-
-	if (!current->left && !current->right) {
-		if (getColor(current) == RED) {
-			if (current->parent->left == current)
-				current->parent->left = NULL;
-			else
-				current->parent->right = NULL;
-			freeNode(current);
-			return;
-		}
-		succesor = current;
-	} else if (!current->left) {
-		succesor = getMinNodeInRightSubtree(current->left);
-		current->obj = succesor->obj;
-
-		if (simpleRemoveRight(succesor, current))
-			return;
-	} else {
-		succesor = getMaxNodeInLeftSubtree(current->left);
-		current->obj = succesor->obj;
-
-		if (simpleRemoveLeft(succesor, current))
-			return;
-	}
-
-	removeNode(succesor, succesor->parent, tree->root);
-
-	if (succesor->parent->left == succesor)
-		succesor->parent->left = NULL;
-	else
-		succesor->parent->right = NULL;
-	freeNode(succesor);
+	freeNode(removeNode(current, tree->root));
 
 	tree->size--;
 	if (auxiRootRedBlackTree) {
@@ -449,8 +464,15 @@ void removeRedBlackTree(RedBlackTree* tree, int info) {
 	}
 }
 
-void clearAvlTree(RedBlackTree* tree);
-void freeAvlTree(RedBlackTree* tree);
+void clearRedBlackTree(RedBlackTree* tree) {
+	while (tree->root)
+		removeRedBlackTree(tree, tree->root->obj);
+}
+
+void freeRedBlackTree(RedBlackTree* tree) {
+	clearRedBlackTree(tree);
+	free(tree);
+}
 
 static void printNode(Node* node, int tab) {
 	if (node == NULL)

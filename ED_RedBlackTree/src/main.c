@@ -34,5 +34,9 @@ int main() {
 	removeRedBlackTree(tree, 64);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
+
+	clearRedBlackTree(tree);
+	printf("\n----------------------------------\n");
+	printRedBlackTree(tree);
 	return 0;
 }
