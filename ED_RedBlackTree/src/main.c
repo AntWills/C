@@ -26,12 +26,12 @@ int main() {
 	printRedBlackTree(tree);
 
 	// return 0;
-	removeRedBlackTree(tree, 78);
+	removeRedBlackTree(tree, vetor[6]);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
 
 	// return 0;
-	removeRedBlackTree(tree, 64);
+	removeRedBlackTree(tree, vetor[9]);
 	printf("\n----------------------------------\n");
 	printRedBlackTree(tree);
 

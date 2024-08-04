@@ -18,6 +18,7 @@ static void freeNode(Node* node) {
 }
 
 static int compareInt(int a, int b);
+static int compareFloat(float a, float b);
 static int compareNode(Node* const node1, Node* const node2);
 static int compareNodeInt(Node* const node, int obj);
 
@@ -101,7 +102,7 @@ static void rotationLeft(Node* root, bool alterColor) {
 
 	root->parent = node;
 	node->parent = parent;
-	if (root->right != NULL)
+	if (root->right)
 		root->right->parent = root;
 	if (!parent) {
 		auxiRootRedBlackTree = node;
@@ -133,15 +134,6 @@ static bool OneRedSon(Node* node) {
 	return false;
 }
 
-static bool twoRedSon(Node* node) {
-	if (!node)
-		return false;
-	if (getColor(node->left) == RED &&
-	    getColor(node->right) == RED)
-		return true;
-	return false;
-}
-
 static bool twoBlackSon(Node* node) {
 	if (!node)
 		return false;
@@ -151,11 +143,14 @@ static bool twoBlackSon(Node* node) {
 	return false;
 }
 
-static void orgInsertionTree(Node** node, int obj) {
+static void orgInsertionTree(Node** node) {
 	if (!(*node) || twoBlackSon(*node))
 		return;
 
-	if (twoRedSon(*node)) {
+	// Verifica se tem dois filhos vermelhos.
+	if (getColor((*node)->left) == RED &&
+	    getColor((*node)->right) == RED) {
+		// Se tiver, verificar se tem netos vermelhos.
 		if (OneRedSon((*node)->left) || OneRedSon((*node)->right)) {
 			alterColor(node);
 			return;
@@ -195,7 +190,7 @@ static bool insertionNode(Node** current, Node* node) {
 	if ((*current)->left == node || (*current)->right == node)
 		node->parent = *current;
 
-	orgInsertionTree(current, node->obj);
+	orgInsertionTree(current);
 	return true;
 }
 
@@ -246,7 +241,7 @@ int searchRedBlackTree(RedBlackTree* tree, int info) {
 	return 0;
 }
 
-static Node* getMaxNodeInLeftSubtree(Node* node) {
+static Node* getMaxNodeInLeft(Node* node) {
 	if (!node)
 		return NULL;
 	while (node->right)
@@ -254,7 +249,7 @@ static Node* getMaxNodeInLeftSubtree(Node* node) {
 	return node;
 }
 
-static Node* getMinNodeInRightSubtree(Node* node) {
+static Node* getMinNodeInRight(Node* node) {
 	if (!node)
 		return NULL;
 	while (node->left)
@@ -265,7 +260,6 @@ static Node* getMinNodeInRightSubtree(Node* node) {
 static Node* fixOrRaiseLeft(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->right;
 
-	// Irmão vermelho.
 	if (getColor(brother) == RED) {
 		rotationLeft(parent, true);
 		brother = parent->right;
@@ -275,13 +269,13 @@ static Node* fixOrRaiseLeft(Node* removeNode, Node* parent, Node* root) {
 	if (twoBlackSon(brother)) {
 		brother->color = RED;
 
-		// Se o pai também for vermelho, há uma exceção e encerramos a verificação.
+		// Se o pai também for vermelho, há uma exceção e
+		// encerramos a verificação.
 		// Se não for, procede normalmente.
 		if (parent->color == RED) {
 			parent->color = BLACK;
 			return root;
 		}
-
 		return parent;
 	}
 
@@ -303,7 +297,7 @@ static Node* fixOrRaiseLeft(Node* removeNode, Node* parent, Node* root) {
 static Node* fixOrRaiseRight(Node* removeNode, Node* parent, Node* root) {
 	Node* brother = parent->left;
 
-	// Irmão vermelho.
+	// // Irmão vermelho.
 	if (getColor(brother) == RED) {
 		rotationRight(parent, true);
 		brother = parent->right;
@@ -312,6 +306,9 @@ static Node* fixOrRaiseRight(Node* removeNode, Node* parent, Node* root) {
 	// Caso onde a elevação do problema é necessaria.
 	if (twoBlackSon(brother)) {
 		brother->color = RED;
+
+		// Se o pai também for vermelho, há uma exceção e encerramos a verificação.
+		// Se não for, procede normalmente.
 		if (parent->color == RED) {
 			parent->color = BLACK;
 			return root;
@@ -394,8 +391,8 @@ static bool simpleRemoveRight(Node* succesor, Node* current) {
 
 static Node* removeNode(Node* removeNode, Node* root) {
 	Node* succesor = removeNode->left
-	                     ? getMaxNodeInLeftSubtree(removeNode->left)
-	                     : getMinNodeInRightSubtree(removeNode->right);
+	                     ? getMaxNodeInLeft(removeNode->left)
+	                     : getMinNodeInRight(removeNode->right);
 
 	if (!succesor) {
 		if (getColor(removeNode) == RED) {

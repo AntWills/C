@@ -1,5 +1,7 @@
 #include "SortList.h"
 
+static List* currentList = NULL;
+
 static void swapNodeList(List* list, Node* nodeA, Node* nodeB) {
 	Node* nextA = nodeA->next;
 	Node* nextB = nodeB->next;
@@ -56,48 +58,93 @@ void bubbleSort(List* list) {
 	} while (swap);
 }
 
-static void orgListHeapMin(List* vetor, int tam, int index) {
-	if (index >= tam) {
-		return;
+static Node* getNodeRelativeIndex(Node* node, int currentIndex, int getIndex) {
+	if (!node)
+		return NULL;
+	int auxi = getIndex - currentIndex;
+
+	if (auxi > 0) {
+		for (int i = 0; i < auxi; i++)
+			node = node->next;
+	} else {
+		// Caso onde o node desejado é anterior ao atual.
 	}
-	// filhos a esquerda e direita
-	int left = 2 * index + 1;
-	int right = 2 * index + 2;
 
-	if (left < tam)
-		orgListHeapMin(vetor, tam, left);
-
-	if (right < tam)
-		orgListHeapMin(vetor, tam, right);
-
-	if (left < tam)
-		if (getIndexList(vetor, index) > getIndexList(vetor, left))
-			swapIndexList(vetor, index, left);
-	if (right < tam)
-		if (getIndexList(vetor, index) > getIndexList(vetor, right))
-			swapIndexList(vetor, index, right);
+	return node;
 }
 
-static void orgListHeapMax(List* vetor, int tam, int index) {
+static Node* orgListHeapMin(Node* node, int tam, int index) {
 	if (index >= tam) {
-		return;
+		return NULL;
 	}
 	// filhos a esquerda e direita
 	int left = 2 * index + 1;
 	int right = 2 * index + 2;
 
-	if (left < tam)
-		orgListHeapMax(vetor, tam, left);
+	Node* nodeLeft = NULL;
+	Node* nodeRight = NULL;
 
-	if (right < tam)
-		orgListHeapMax(vetor, tam, right);
+	if (left < tam) {
+		nodeLeft = getNodeRelativeIndex(node, index, left);
+		nodeLeft = orgListHeapMin(nodeLeft, tam, left);
+	}
 
-	if (left < tam)
-		if (getIndexList(vetor, index) < getIndexList(vetor, left))
-			swapIndexList(vetor, index, left);
-	if (right < tam)
-		if (getIndexList(vetor, index) < getIndexList(vetor, right))
-			swapIndexList(vetor, index, right);
+	if (right < tam) {
+		nodeRight = getNodeRelativeIndex(node, index, right);
+		nodeRight = orgListHeapMin(nodeRight, tam, right);
+	}
+
+	if (nodeLeft) {
+		if (node->obj > nodeLeft->obj) {
+			swapNodeList(currentList, node, nodeLeft);
+			node = nodeLeft;
+		}
+	}
+
+	if (nodeRight) {
+		if (node->obj > nodeRight->obj) {
+			swapNodeList(currentList, node, nodeRight);
+			node = nodeRight;
+		}
+	}
+	return node;
+}
+
+static Node* orgListHeapMax(Node* node, int tam, int index) {
+	if (index >= tam) {
+		return NULL;
+	}
+	// filhos a esquerda e direita
+	int left = 2 * index + 1;
+	int right = 2 * index + 2;
+
+	Node* nodeLeft = NULL;
+	Node* nodeRight = NULL;
+
+	if (left < tam) {
+		nodeLeft = getNodeRelativeIndex(node, index, left);
+		nodeLeft = orgListHeapMax(nodeLeft, tam, left);
+	}
+
+	if (right < tam) {
+		nodeRight = getNodeRelativeIndex(node, index, right);
+		nodeRight = orgListHeapMax(nodeRight, tam, right);
+	}
+
+	if (nodeLeft) {
+		if (node->obj < nodeLeft->obj) {
+			swapNodeList(currentList, node, nodeLeft);
+			node = nodeLeft;
+		}
+	}
+
+	if (nodeRight) {
+		if (node->obj < nodeRight->obj) {
+			swapNodeList(currentList, node, nodeRight);
+			node = nodeRight;
+		}
+	}
+	return node;
 }
 
 /** Organiza a lista usando heapSort.
@@ -105,15 +152,18 @@ static void orgListHeapMax(List* vetor, int tam, int index) {
  *  1 - Decrescente.
  */
 void heapSort(List* list, int ordem) {
+	currentList = list;
 	if (ordem == 0) {
 		for (int i = list->size - 1; i >= 0; i--) {
-			orgListHeapMax(list, i + 1, 0);
+			orgListHeapMax(list->firt, i + 1, 0);
 			swapIndexList(list, 0, i);
 		}
+		currentList = NULL;
 		return;
 	}
 	for (int i = list->size - 1; i >= 0; i--) {
-		orgListHeapMin(list, i + 1, 0);
+		orgListHeapMin(list->firt, i + 1, 0);
 		swapIndexList(list, 0, i);
 	}
+	currentList = NULL;
 }

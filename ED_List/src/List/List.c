@@ -230,5 +230,5 @@ void printReverseList(List* list) {
 
 void sortList(List* list) {
 	// bubbleSort(list);
-	heapSort(list, 1);
+	heapSort(list, 0);
 }
