@@ -1,0 +1,1 @@
+add_library(TwoThreeTree TwoThreeTree.h TwoThreeTree.c)
