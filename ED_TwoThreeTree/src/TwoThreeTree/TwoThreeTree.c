@@ -11,6 +11,13 @@ void freeInt(Int* num) {
 	free(num);
 }
 
+static void setVetorInt(Int* setInts[],
+                        Int* intValue,
+                        int size) {
+	for (int i = 0; i < size; i++)
+		setInts[i] = intValue;
+}
+
 static void setVetorNode(Node* setNodes[],
                          Node* nodeValue,
                          int size) {
@@ -20,7 +27,7 @@ static void setVetorNode(Node* setNodes[],
 
 static Node* newNode(Int* num) {
 	Node* node = (Node*)malloc(sizeof(Node));
-	setVetorNode(node->vectorKeys, NULL, NumKey);
+	setVetorInt(node->vectorKeys, NULL, NumKey);
 	setVetorNode(node->vectorNodes, NULL, NumKey + 1);
 	node->vectorKeys[0] = num;
 	node->parent = NULL;
@@ -34,6 +41,7 @@ static Node* newNode(Int* num) {
 static void insertion(Node* node, Int* num);
 static void insertionNode(Node* node, Int* num);
 static void moveVectorOneSpace(Int* vector[], int size, int index);
+static void swap(void* vector[], int indexA, int indexB);
 static Node* split(Node* node, Int* num);
 
 // Funções privadas que verificam o node.
@@ -58,28 +66,42 @@ static void insertion(Node* node, Int* num) {
 	if (!node)
 		return;
 	if (isLeaf(node)) {
-		if (node->sizeKeys == (NumKey - 1)) {
+		if (node->sizeKeys == NumKey) {
 			split(node, num);
+			return;
+		} else {
+			insertionNode(node, num);
+			node->sizeKeys++;
 			return;
 		}
 	}
 }
 
 static void insertionNode(Node* node, Int* num) {
-	for (int i = 0; i < (NumKey - 1) && node->vectorKeys[i]; i++) {
-		if (node->vectorKeys[i]->num < num->num) {
+	int i = 0;
+	for (; i < NumKey && node->vectorKeys[i]; i++) {
+		if (num->num < node->vectorKeys[i]->num) {
+			moveVectorOneSpace(node->vectorKeys, node->sizeKeys, i);
 			node->vectorKeys[i] = num;
-			break;
+			return;
 		}
 	}
+	node->vectorKeys[i] = num;
 }
 
 static void moveVectorOneSpace(Int* vector[], int size, int index) {
-	for (int i = (size - 1); i > (index + 1); i++) {
-		Int* auxi = vector[i];
-		vector[i] = vector[i - 1];
-		vector[i - 1] = auxi;
+	for (int i = (size - 1); i > index; i--) {
+		swap(vector, i, i - 1);
 	}
+}
+
+static void swap(void* vector[], int indexA, int indexB) {
+	void* auxi = vector[indexA];
+	vector[indexA] = vector[indexB];
+	vector[indexB] = auxi;
+}
+
+static Node* split(Node* node, Int* num) {
 }
 
 static bool isLeaf(Node* node) {
@@ -104,7 +126,7 @@ static void printNodes(Node* node, int depth) {
 
 	for (int i = 0; i < depth; i++)
 		printf("    | ");
-	printInts(node->vectorNodes, NumKey);
+	printInts(node->vectorKeys, NumKey);
 
 	for (int i = 0; i < (NumKey + 1); i++)
 		printNodes(node->vectorNodes[i], depth + 1);

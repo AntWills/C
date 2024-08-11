@@ -3,5 +3,6 @@ project(TwoThreeTreeMain)
 
 add_executable(TwoThreeTreeMain src/main.c)
 
-
 add_subdirectory(src/TwoThreeTree)
+
+target_link_libraries(TwoThreeTreeMain PUBLIC TwoThreeTree)
