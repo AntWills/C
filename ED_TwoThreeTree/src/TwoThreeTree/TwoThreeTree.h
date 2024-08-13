@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NumKey 2
+#define MaxKey 2
 
 typedef struct Int {
 	int num;
@@ -15,8 +15,8 @@ void freeInt(Int* num);
 
 typedef struct Node {
 	int sizeKeys;
-	Int* vectorKeys[NumKey];
-	struct Node* vectorNodes[NumKey + 1];
+	Int* vectorKeys[MaxKey];
+	struct Node* vectorNodes[MaxKey + 1];
 	struct Node* parent;
 } Node;
 

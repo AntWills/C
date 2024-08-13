@@ -2,14 +2,6 @@
 #include <stdlib.h>
 #include "TwoThreeTree/TwoThreeTree.h"
 
-static void moveVectorOneSpace(Int* vector[], int size, int index) {
-	for (int i = (size - 1); i > (index); i--) {
-		void* auxi = vector[i];
-		vector[i] = vector[i - 1];
-		vector[i - 1] = auxi;
-	}
-}
-
 static void printInts(Int* num[], int size) {
 	for (int i = 0; i < size; i++)
 		printf("%d ", num[i]->num);
@@ -17,14 +9,20 @@ static void printInts(Int* num[], int size) {
 }
 
 int main() {
+	int size = 2;
 	Int* vector[4] = {
-	    newInt(10),
-	    newInt(50),
 	    newInt(70),
+	    newInt(50),
+	    newInt(10),
 	    NULL};
 	printInts(vector, 3);
-	moveVectorOneSpace(vector, 4, 1);
-	vector[1] = newInt(0);
-	printInts(vector, 4);
+	printf("\n");
+
+	TwoThreeTree tree;
+	tree.root = NULL;
+
+	for (int i = 0; i < size; i++)
+		insertionTwoThreeTree(&tree, vector[i]);
+	printTwoThreeTree(&tree);
 	return 0;
 }
