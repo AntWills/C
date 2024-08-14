@@ -4,18 +4,22 @@
 
 static void printInts(Int* num[], int size) {
 	for (int i = 0; i < size; i++)
-		printf("%d ", num[i]->num);
+		printf("%d ", num[i]->info);
 	printf("\n");
 }
 
 int main() {
-	int size = 2;
-	Int* vector[4] = {
+	int size = 6;
+	Int* vector[] = {
 	    newInt(70),
 	    newInt(50),
 	    newInt(10),
-	    NULL};
-	printInts(vector, 3);
+	    newInt(60),
+	    newInt(5),
+	    newInt(0),
+	    newInt(80),
+	    newInt(55)};
+	printInts(vector, size);
 	printf("\n");
 
 	TwoThreeTree tree;

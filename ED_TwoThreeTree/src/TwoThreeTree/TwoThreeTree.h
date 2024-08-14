@@ -7,7 +7,7 @@
 #define MaxKey 2
 
 typedef struct Int {
-	int num;
+	int info;
 } Int;
 
 Int* newInt(int num);
