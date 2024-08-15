@@ -9,16 +9,19 @@ static void printInts(Int* num[], int size) {
 }
 
 int main() {
-	int size = 6;
+	int size = 11;
 	Int* vector[] = {
 	    newInt(70),
 	    newInt(50),
 	    newInt(10),
 	    newInt(60),
-	    newInt(5),
-	    newInt(0),
 	    newInt(80),
-	    newInt(55)};
+	    newInt(0),
+	    newInt(5),
+	    newInt(15),
+	    newInt(20),
+	    newInt(2),
+	    newInt(3)};
 	printInts(vector, size);
 	printf("\n");
 

@@ -17,7 +17,7 @@ typedef struct Node {
 	int sizeKeys;
 	Int* vectorKeys[MaxKey];
 	struct Node* vectorNodes[MaxKey + 1];
-	struct Node* parent;
+	// left - center - right
 } Node;
 
 typedef struct TwoThreeTree {

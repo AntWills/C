@@ -2,7 +2,7 @@
 
 // Varivael global para acessar diretamente a raiz.
 static TwoThreeTree* treeGlobal = NULL;
-static Int* auxiInts[3] = {};
+static Node* auxiNodes[2] = {};
 
 Int* newInt(int num) {
 	Int* numInt = (Int*)malloc(sizeof(Int));
@@ -34,7 +34,7 @@ static Node* newNode(Int* num, Node* parent) {
 	setVetorInt(node->vectorKeys, NULL, MaxKey);
 	setVetorNode(node->vectorNodes, NULL, MaxKey + 1);
 	node->vectorKeys[0] = num;
-	node->parent = parent;
+	// node->parent = parent;
 
 	if (num)
 		node->sizeKeys = 1;
@@ -45,13 +45,11 @@ static Node* newNode(Int* num, Node* parent) {
 
 // Funções privadas que ajudam na inserção.
 
-static void insertion(Node* node, Int* num);
+static Int* insertion(Node* node, Int* num);
 static void insertionNode(Node* node, Int* key);
 static void swap(void* vector[], int indexA, int indexB);
-static Node* split(Node* node, Int* key);
-static Node* splitRoot(Node* node, Int* key, bool simple);
-static Node* splitNode(Node* node, Int* key, Int* newNum);
-static Int* getCenterAndOrgVector(Int* vector[], int size, Int* key);
+
+static Int* splitLeaf(Node* node, Int* key);
 
 // Funções privadas que verificam o node.
 
@@ -62,39 +60,86 @@ static bool isLeaf(Node* node);
 static void printNodes(Node* node, int depth);
 static void printInts(Int* num[], int size);
 
-void insertionTwoThreeTree(TwoThreeTree* tree, Int* num) {
+void insertionTwoThreeTree(TwoThreeTree* tree, Int* key) {
 	if (!tree->root) {
-		tree->root = newNode(num, NULL);
+		tree->root = newNode(key, NULL);
 		return;
 	}
 	treeGlobal = tree;
-	insertion(tree->root, num);
+	Int* num = insertion(tree->root, key);
+	if (!num)
+		return;
+	tree->root = newNode(num, NULL);
+	tree->root->vectorNodes[0] = auxiNodes[0];
+	tree->root->vectorNodes[2] = auxiNodes[1];
+
+	auxiNodes[0] = NULL;
+	auxiNodes[1] = NULL;
 }
 
-static void insertion(Node* node, Int* num) {
+static Int* insertion(Node* node, Int* key) {
 	if (!node)
-		return;
-	if (isLeaf(node) && !node->vectorNodes[1]) {
-		insertionNode(node, num);
-		return;
+		return NULL;
+	if (isLeaf(node) && !node->vectorKeys[1]) {
+		insertionNode(node, key);
+		return NULL;
 	}
 
-	if (isLeaf(node) && node->vectorNodes[0]) {
-		split(node, num);
-		return;
+	if (isLeaf(node) && node->vectorKeys[1]) {
+		return splitLeaf(node, key);
 	}
-	int i = 0;
-	for (; i < MaxKey && node->vectorKeys[i]; i++) {
-		if (num->info < node->vectorKeys[i]->info) {
-			insertion(node->vectorNodes[i], num);
-			return;
+
+	Int* auxi = NULL;
+	for (int i = 0; i < 2; i++) {
+		if (node->vectorKeys[i]) {
+			if (key->info < node->vectorKeys[i]->info) {
+				auxi = insertion(node->vectorNodes[i], key);
+				break;
+			}
+		} else {
+			auxi = insertion(node->vectorNodes[i + 1], key);
+			break;
 		}
 	}
-	insertion(node->vectorNodes[i + 1], num);
+	if (!auxi)
+		return NULL;
+
+	if (!node->vectorKeys[1]) {
+		insertionNode(node, auxi);
+		if (auxi->info < node->vectorKeys[0]->info) {
+			node->vectorNodes[0] = auxiNodes[0];
+			node->vectorNodes[1] = auxiNodes[1];
+		} else {
+			node->vectorNodes[1] = auxiNodes[0];
+			node->vectorNodes[2] = auxiNodes[1];
+		}
+		return NULL;
+	}
+
+	Node* left = NULL;
+	Node* right = NULL;
+	if (auxi->info < node->vectorKeys[0]->info) {
+		left = newNode(auxi, NULL);
+		left->vectorNodes[0] = auxiNodes[0];
+		left->vectorNodes[2] = auxiNodes[1];
+
+		auxi = node->vectorKeys[0];
+		swap((void*)node->vectorKeys, 0, 1);
+		node->vectorKeys[1] = NULL;
+		node->vectorNodes[0] = node->vectorNodes[1];
+		node->vectorNodes[1] = NULL;
+
+		right = node;
+	} else if (auxi->info < node->vectorKeys[1]->info) {
+	} else {
+	}
+
+	auxiNodes[0] = left;
+	auxiNodes[1] = right;
+	return auxi;
 }
 
 static void insertionNode(Node* node, Int* key) {
-	int i = 0;
 	node->vectorKeys[1] = key;
 
 	if (node->vectorKeys[0]->info > node->vectorKeys[1]->info)
@@ -107,89 +152,33 @@ static void swap(void* vector[], int indexA, int indexB) {
 	vector[indexB] = auxi;
 }
 
-static Node* split(Node* node, Int* key) {
-	if (node == treeGlobal->root) {
-		treeGlobal->root = splitRoot(node, key, true);
+static Int* splitLeaf(Node* node, Int* key) {
+	Node* left = NULL;
+	Node* right = NULL;
+	if (key->info < node->vectorKeys[0]->info) {
+		left = newNode(key, node);
+
+		right = newNode(node->vectorKeys[1], node);
+	} else if (key->info < node->vectorKeys[1]->info) {
+		left = newNode(node->vectorKeys[0], node);
+		node->vectorKeys[0] = NULL;
+
+		right = newNode(node->vectorKeys[1], node);
+
+		node->vectorKeys[0] = key;
 	} else {
-		splitNode(node, key, NULL);
-	}
-	return NULL;
-}
+		left = newNode(node->vectorKeys[0], node);
+		node->vectorKeys[0] = NULL;
 
-static Node* splitRoot(Node* node, Int* key, bool simple) {
-	Node* newRoot = NULL;
-	if (simple) {
-		Int* centorNum = getCenterAndOrgVector(node->vectorKeys, node->sizeKeys, key);
+		right = newNode(key, node);
 
-		newRoot = newNode(centorNum, NULL);
-		newRoot->vectorNodes[0] = newNode(node->vectorKeys[0], newRoot);
-		newRoot->vectorNodes[2] = newNode(node->vectorKeys[1], newRoot);
-
-		free(node);
-		return newRoot;
+		node->vectorKeys[0] = node->vectorKeys[1];
 	}
 
-	if (treeGlobal->root->vectorNodes[0] == node) {
-	} else {
-		newRoot = newNode(treeGlobal->root->vectorKeys[1], NULL);
-
-		Node* rithg = newNode(key, newRoot);
-
-		Node* left = newNode(treeGlobal->root->vectorKeys[0], newRoot);
-		left->vectorNodes[0] = treeGlobal->root->vectorNodes[0];
-		left->vectorNodes[2] = treeGlobal->root->vectorNodes[1];
-		left->vectorNodes[0]->parent = left;
-		left->vectorNodes[2]->parent = left;
-
-		newRoot->vectorNodes[0] = left;
-	}
-	return newRoot;
-}
-
-static Node* splitNode(Node* node, Int* key, Int* newNum) {
-	Node* parent = node->parent;
-	bool parentAreSimple = parent->sizeKeys == 1;
-	bool nodeIsTheLeft = parent->vectorNodes[0] == node;
-
-	if (parentAreSimple) {
-		Int* center = getCenterAndOrgVector(node->vectorKeys, MaxKey, key);
-		Int* right = node->vectorKeys[1];
-		node->vectorKeys[1] = NULL;
-		node->sizeKeys--;
-		Node* nodeRight = newNode(right, parent);
-
-		if (parent->vectorNodes[0] == node) {
-			insertionNode(parent, center);
-			parent->vectorNodes[1] = nodeRight;
-		} else {
-			parent->vectorKeys[1] = center;
-			parent->sizeKeys++;
-			parent->vectorNodes[1] = node;
-			parent->vectorNodes[2] = nodeRight;
-		}
-		return NULL;
-	}
-
-	if (parent == treeGlobal->root) {
-		Int* center = getCenterAndOrgVector(node->vectorKeys, MaxKey, key);
-		// treeGlobal->root = splitRoot(node, center, true);
-	}
-
-	return NULL;
-}
-
-static Int* getCenterAndOrgVector(Int* vector[], int size, Int* key) {
-	Int* center = NULL;
-	if ((vector[0]->info < key->info) &&
-	    (key->info < vector[1]->info)) {
-	} else if (key->info < vector[0]->info) {
-		center = vector[0];
-		vector[0] = key;
-	} else {
-		center = vector[1];
-		vector[1] = key;
-	}
-	return center;
+	node->vectorKeys[1] = NULL;
+	auxiNodes[0] = left;
+	auxiNodes[1] = right;
+	return node->vectorKeys[0];
 }
 
 static bool isLeaf(Node* node) {
