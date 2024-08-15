@@ -9,7 +9,7 @@ static void printInts(Int* num[], int size) {
 }
 
 int main() {
-	int size = 11;
+	int size = 8;
 	Int* vector[] = {
 	    newInt(70),
 	    newInt(50),
@@ -17,8 +17,8 @@ int main() {
 	    newInt(60),
 	    newInt(80),
 	    newInt(0),
-	    newInt(5),
-	    newInt(15),
+	    newInt(55),
+	    newInt(90),
 	    newInt(20),
 	    newInt(2),
 	    newInt(3)};
@@ -28,8 +28,14 @@ int main() {
 	TwoThreeTree tree;
 	tree.root = NULL;
 
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < size; i++) {
 		insertionTwoThreeTree(&tree, vector[i]);
-	printTwoThreeTree(&tree);
+
+		printf("\n\n---------------------------\n\n");
+		printf("Inserindo: %d.\n", vector[i]->info);
+		printTwoThreeTree(&tree);
+	}
+
+	// printTwoThreeTree(&tree);
 	return 0;
 }

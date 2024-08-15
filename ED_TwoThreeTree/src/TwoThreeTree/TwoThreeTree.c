@@ -80,6 +80,8 @@ void insertionTwoThreeTree(TwoThreeTree* tree, Int* key) {
 static Int* insertion(Node* node, Int* key) {
 	if (!node)
 		return NULL;
+	if (key->info == 90) {
+	}
 	if (isLeaf(node) && !node->vectorKeys[1]) {
 		insertionNode(node, key);
 		return NULL;
@@ -101,6 +103,9 @@ static Int* insertion(Node* node, Int* key) {
 			break;
 		}
 	}
+	// if (!auxi && node->vectorKeys[1]->info < key->info) {
+	// 	auxi = insertion(node->vectorNodes[2], key);
+	// }
 	if (!auxi)
 		return NULL;
 
@@ -124,6 +129,7 @@ static Int* insertion(Node* node, Int* key) {
 		left->vectorNodes[2] = auxiNodes[1];
 
 		auxi = node->vectorKeys[0];
+
 		swap((void*)node->vectorKeys, 0, 1);
 		node->vectorKeys[1] = NULL;
 		node->vectorNodes[0] = node->vectorNodes[1];
@@ -131,7 +137,21 @@ static Int* insertion(Node* node, Int* key) {
 
 		right = node;
 	} else if (auxi->info < node->vectorKeys[1]->info) {
+		right = newNode(node->vectorKeys[1], NULL);
+		node->vectorKeys[1] = NULL;
+		right->vectorNodes[0] = auxiNodes[1];
+		right->vectorNodes[2] = node->vectorNodes[2];
+
+		left = node;
+		left->vectorNodes[1] = NULL;
+		left->vectorNodes[0] = node->vectorNodes[0];
+		left->vectorNodes[2] = auxiNodes[0];
 	} else {
+		right = newNode(auxi, NULL);
+		right->vectorNodes[0] = auxiNodes[0];
+		right->vectorNodes[2] = auxiNodes[1];
+
+		auxi = auxi = node->vectorKeys[1];
 	}
 
 	auxiNodes[0] = left;

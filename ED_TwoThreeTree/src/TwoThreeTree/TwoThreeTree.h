@@ -15,8 +15,8 @@ void freeInt(Int* num);
 
 typedef struct Node {
 	int sizeKeys;
-	Int* vectorKeys[MaxKey];
-	struct Node* vectorNodes[MaxKey + 1];
+	Int* vectorKeys[2];
+	struct Node* vectorNodes[3];
 	// left - center - right
 } Node;
 
