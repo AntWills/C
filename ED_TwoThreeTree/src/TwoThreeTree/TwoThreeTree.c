@@ -48,8 +48,9 @@ static Node* newNode(Int* num, Node* parent) {
 static Int* insertion(Node* node, Int* num);
 static void insertionNode(Node* node, Int* key);
 static void swap(void* vector[], int indexA, int indexB);
-
 static Int* splitLeaf(Node* node, Int* key);
+static Int* split(Node* node, Int* key);
+static void mergeNodes(Node* node, Int* key);
 
 // Funções privadas que verificam o node.
 
@@ -80,83 +81,33 @@ void insertionTwoThreeTree(TwoThreeTree* tree, Int* key) {
 static Int* insertion(Node* node, Int* key) {
 	if (!node)
 		return NULL;
-	if (key->info == 90) {
-	}
+
 	if (isLeaf(node) && !node->vectorKeys[1]) {
 		insertionNode(node, key);
 		return NULL;
 	}
 
-	if (isLeaf(node) && node->vectorKeys[1]) {
+	if (isLeaf(node) && node->vectorKeys[1])
 		return splitLeaf(node, key);
-	}
 
 	Int* auxi = NULL;
-	for (int i = 0; i < 2; i++) {
-		if (node->vectorKeys[i]) {
-			if (key->info < node->vectorKeys[i]->info) {
-				auxi = insertion(node->vectorNodes[i], key);
-				break;
-			}
-		} else {
-			auxi = insertion(node->vectorNodes[i + 1], key);
-			break;
-		}
-	}
-	// if (!auxi && node->vectorKeys[1]->info < key->info) {
-	// 	auxi = insertion(node->vectorNodes[2], key);
-	// }
+
+	if (key->info < node->vectorKeys[0]->info)
+		auxi = insertion(node->vectorNodes[0], key);
+	else if (key->info > node->vectorKeys[2]->info)
+		auxi = insertion(node->vectorNodes[2], key);
+	else
+		auxi = insertion(node->vectorNodes[1], key);
+
 	if (!auxi)
 		return NULL;
 
 	if (!node->vectorKeys[1]) {
-		insertionNode(node, auxi);
-		if (auxi->info < node->vectorKeys[0]->info) {
-			node->vectorNodes[0] = auxiNodes[0];
-			node->vectorNodes[1] = auxiNodes[1];
-		} else {
-			node->vectorNodes[1] = auxiNodes[0];
-			node->vectorNodes[2] = auxiNodes[1];
-		}
+		mergeNodes(node, auxi);
 		return NULL;
 	}
 
-	Node* left = NULL;
-	Node* right = NULL;
-	if (auxi->info < node->vectorKeys[0]->info) {
-		left = newNode(auxi, NULL);
-		left->vectorNodes[0] = auxiNodes[0];
-		left->vectorNodes[2] = auxiNodes[1];
-
-		auxi = node->vectorKeys[0];
-
-		swap((void*)node->vectorKeys, 0, 1);
-		node->vectorKeys[1] = NULL;
-		node->vectorNodes[0] = node->vectorNodes[1];
-		node->vectorNodes[1] = NULL;
-
-		right = node;
-	} else if (auxi->info < node->vectorKeys[1]->info) {
-		right = newNode(node->vectorKeys[1], NULL);
-		node->vectorKeys[1] = NULL;
-		right->vectorNodes[0] = auxiNodes[1];
-		right->vectorNodes[2] = node->vectorNodes[2];
-
-		left = node;
-		left->vectorNodes[1] = NULL;
-		left->vectorNodes[0] = node->vectorNodes[0];
-		left->vectorNodes[2] = auxiNodes[0];
-	} else {
-		right = newNode(auxi, NULL);
-		right->vectorNodes[0] = auxiNodes[0];
-		right->vectorNodes[2] = auxiNodes[1];
-
-		auxi = auxi = node->vectorKeys[1];
-	}
-
-	auxiNodes[0] = left;
-	auxiNodes[1] = right;
-	return auxi;
+	return split(node, auxi);
 }
 
 static void insertionNode(Node* node, Int* key) {
@@ -199,6 +150,63 @@ static Int* splitLeaf(Node* node, Int* key) {
 	auxiNodes[0] = left;
 	auxiNodes[1] = right;
 	return node->vectorKeys[0];
+}
+
+static Int* split(Node* node, Int* key) {
+	Node* left = NULL;
+	Node* right = NULL;
+	if (key->info < node->vectorKeys[0]->info) {
+		left = newNode(key, NULL);
+		left->vectorNodes[0] = auxiNodes[0];
+		left->vectorNodes[2] = auxiNodes[1];
+
+		key = node->vectorKeys[0];
+
+		swap((void*)node->vectorKeys, 0, 1);
+		node->vectorKeys[1] = NULL;
+		node->vectorNodes[0] = node->vectorNodes[1];
+		node->vectorNodes[1] = NULL;
+
+		right = node;
+	} else if (key->info < node->vectorKeys[1]->info) {
+		right = newNode(node->vectorKeys[1], NULL);
+		node->vectorKeys[1] = NULL;
+		right->vectorNodes[0] = auxiNodes[1];
+		right->vectorNodes[2] = node->vectorNodes[2];
+
+		left = node;
+		left->vectorNodes[1] = NULL;
+		left->vectorNodes[0] = node->vectorNodes[0];
+		left->vectorNodes[2] = auxiNodes[0];
+	} else {
+		right = newNode(key, NULL);
+		right->vectorNodes[0] = auxiNodes[0];
+		right->vectorNodes[2] = auxiNodes[1];
+
+		key = node->vectorKeys[1];
+		node->vectorKeys[1] = NULL;
+
+		node->vectorNodes[2] = node->vectorNodes[1];
+		node->vectorNodes[1] = NULL;
+
+		left = node;
+	}
+
+	auxiNodes[0] = left;
+	auxiNodes[1] = right;
+
+	return key;
+}
+
+static void mergeNodes(Node* node, Int* key) {
+	if (key->info < node->vectorKeys[0]->info) {
+		node->vectorNodes[0] = auxiNodes[0];
+		node->vectorNodes[1] = auxiNodes[1];
+	} else {
+		node->vectorNodes[1] = auxiNodes[0];
+		node->vectorNodes[2] = auxiNodes[1];
+	}
+	insertionNode(node, key);
 }
 
 static bool isLeaf(Node* node) {
